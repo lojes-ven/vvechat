@@ -34,10 +34,8 @@ func (s *UserService) IsUidExist(uid string) (bool, error) {
 		return false, res.Error
 	}
 
-	if cnt > 0 {
-		return true, nil
-	}
-	return false, nil
+	exist := cnt > 0
+	return exist, nil
 }
 
 func (s *UserService) Register(user *model.User) error {
