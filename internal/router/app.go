@@ -17,6 +17,7 @@ func Launch(db *gorm.DB) *gin.Engine {
 	api := r.Group("/api")
 	{
 		api.POST("/register", handle.Register)
+		api.POST("/login/uid", handle.LoginByUid)
 	}
 
 	return r

@@ -3,8 +3,8 @@ package service
 import (
 	"errors"
 	"vvechat/internal/model"
+	"vvechat/pkg/secure"
 
-	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
@@ -21,6 +21,9 @@ func (s *UserService) GetUserByUid(uid string) (*model.User, error) {
 	res := s.db.Where("uid = ?", uid).First(&user)
 
 	if res.Error != nil {
+		if errors.Is(res.Error, gorm.ErrRecordNotFound) {
+			return nil, errors.New("微信号不存在！")
+		}
 		return nil, res.Error
 	}
 
@@ -51,12 +54,29 @@ func (s *UserService) Register(user *model.User) error {
 		return errors.New("微信号已存在！")
 	}
 
-	hash, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+	user.Password, err = secure.HashString(user.Password)
 	if err != nil {
 		return err
 	}
 
-	user.Password = string(hash)
-
 	return s.db.Create(user).Error
+}
+
+func (s *UserService) LoginByUid(uid string, password string) error {
+	user, err := s.GetUserByUid(uid)
+	if err != nil {
+		return err
+	}
+
+	input_pwd, err := secure.HashString(password)
+
+	if err != nil {
+		return err
+	}
+
+	if input_pwd == user.Password {
+		return nil
+	} else {
+		return errors.New("密码错误")
+	}
 }
