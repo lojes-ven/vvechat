@@ -2,14 +2,34 @@ package utils
 
 import (
 	"errors"
+	"sync"
 
 	"github.com/sony/sonyflake"
 )
 
+var (
+	sf   *sonyflake.Sonyflake
+	once sync.Once
+)
+
+// Init 初始化 Sonyflake（只允许调用一次）
+func InitSnowflake() error {
+	var initErr error
+
+	once.Do(func() {
+		sf = sonyflake.NewSonyflake(sonyflake.Settings{})
+		if sf == nil {
+			initErr = errors.New("sonyflake初始化失败!")
+		}
+	})
+
+	return initErr
+}
+
+// NextID 生成全局唯一 ID
 func NextUniqueID() (uint64, error) {
-	sf := sonyflake.NewSonyflake(sonyflake.Settings{})
 	if sf == nil {
-		return 0, errors.New("创建sonyflake实例失败")
+		return 0, errors.New("sonyflake没有初始化!")
 	}
 	return sf.NextID()
 }
