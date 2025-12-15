@@ -17,13 +17,8 @@ func NewUserHandler(serve *service.UserService) *UserHandler {
 	return &UserHandler{serve}
 }
 
-type UidAndPasswordRequest struct {
-	Uid      string `json:"name" binding:"required,max=64"`
-	Password string `json:"password" binding:"required,min=6,max=72"`
-}
-
 func (h *UserHandler) Register(c *gin.Context) {
-	var req UidAndPasswordRequest
+	var req RequestUidAndPassword
 	if err := c.ShouldBindJSON(&req); err != nil {
 		response.Fail(c, http.StatusBadRequest, "json解析出错")
 		return
@@ -39,7 +34,7 @@ func (h *UserHandler) Register(c *gin.Context) {
 }
 
 func (h *UserHandler) LoginByUid(c *gin.Context) {
-	var req UidAndPasswordRequest
+	var req RequestUidAndPassword
 	if err := c.ShouldBindJSON(&req); err != nil {
 		response.Fail(c, http.StatusBadRequest, "json解析出错")
 		return
