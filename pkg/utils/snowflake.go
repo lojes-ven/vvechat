@@ -14,16 +14,16 @@ var (
 
 // Init 初始化 Sonyflake（只允许调用一次）
 func InitSnowflake() error {
-	var initErr error
+	var snowflakeInitErr error
 
 	once.Do(func() {
 		sf = sonyflake.NewSonyflake(sonyflake.Settings{})
 		if sf == nil {
-			initErr = errors.New("sonyflake初始化失败!")
+			snowflakeInitErr = errors.New("sonyflake初始化失败!")
 		}
 	})
 
-	return initErr
+	return snowflakeInitErr
 }
 
 // NextID 生成全局唯一 ID

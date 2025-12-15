@@ -9,15 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type UserHandler struct {
-	serve *service.UserService
-}
-
-func NewUserHandler(serve *service.UserService) *UserHandler {
-	return &UserHandler{serve}
-}
-
-func (h *UserHandler) Register(c *gin.Context) {
+func Register(c *gin.Context) {
 	var req RequestBasicInfo
 	if err := c.ShouldBindJSON(&req); err != nil {
 		response.Fail(c, http.StatusBadRequest, "json解析出错")
@@ -29,7 +21,7 @@ func (h *UserHandler) Register(c *gin.Context) {
 		response.Fail(c, http.StatusBadRequest, err.Error())
 	}
 
-	err = h.serve.Register(user)
+	err = service.Register(user)
 	if err != nil {
 		response.Fail(c, http.StatusBadRequest, err.Error())
 	} else {
@@ -37,14 +29,14 @@ func (h *UserHandler) Register(c *gin.Context) {
 	}
 }
 
-func (h *UserHandler) LoginByUid(c *gin.Context) {
+func LoginByUid(c *gin.Context) {
 	var req RequestBasicInfo
 	if err := c.ShouldBindJSON(&req); err != nil {
 		response.Fail(c, http.StatusBadRequest, "json解析出错")
 		return
 	}
 
-	err := h.serve.LoginByUid(req.Uid, req.Password)
+	err := service.LoginByUid(req.Uid, req.Password)
 	if err != nil {
 		response.Fail(c, http.StatusBadRequest, err.Error())
 	} else {

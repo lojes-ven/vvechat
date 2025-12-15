@@ -10,22 +10,19 @@ import (
 func main() {
 	err := utils.InitSnowflake()
 	if err != nil {
-		log.Println(err)
-		return
+		log.Fatalln(err)
 	}
 
 	err = infra.InitConfig()
 	if err != nil {
-		log.Println(err)
-		return
-	}
-	
-	db, err := infra.InitDatabase()
-	if err != nil {
-		log.Println(err)
-		return
+		log.Fatalln(err)
 	}
 
-	r := router.Launch(db)
+	err = infra.InitDatabase()
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	r := router.Launch()
 	r.Run(":8080")
 }
