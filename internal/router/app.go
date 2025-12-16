@@ -13,6 +13,7 @@ func Launch() *gin.Engine {
 	{
 		api.POST("/register", handler.Register)
 		api.POST("/login/uid", handler.LoginByUid)
+		api.POST("/login/phone_number", handler.LoginByPhone)
 	}
 
 	return r

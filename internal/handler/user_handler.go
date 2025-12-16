@@ -10,7 +10,7 @@ import (
 )
 
 func Register(c *gin.Context) {
-	var req RequestBasicInfo
+	var req RegisterRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		response.Fail(c, http.StatusBadRequest, "json解析出错")
 		return
@@ -30,13 +30,28 @@ func Register(c *gin.Context) {
 }
 
 func LoginByUid(c *gin.Context) {
-	var req RequestBasicInfo
+	var req RequestUidAndPassword
 	if err := c.ShouldBindJSON(&req); err != nil {
 		response.Fail(c, http.StatusBadRequest, "json解析出错")
 		return
 	}
 
 	err := service.LoginByUid(req.Uid, req.Password)
+	if err != nil {
+		response.Fail(c, http.StatusBadRequest, err.Error())
+	} else {
+		response.Success(c, nil)
+	}
+}
+
+func LoginByPhone(c *gin.Context) {
+	var req RequestPhoneAndPassword
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.Fail(c, http.StatusBadRequest, "json解析出错")
+		return
+	}
+
+	err := service.LoginByPhone(req.PhoneNumber, req.Password)
 	if err != nil {
 		response.Fail(c, http.StatusBadRequest, err.Error())
 	} else {

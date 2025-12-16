@@ -7,18 +7,32 @@ import (
 	"vvechat/pkg/utils"
 )
 
-func main() {
+func initAll() error {
 	err := utils.InitSnowflake()
 	if err != nil {
-		log.Fatalln(err)
+		return err
 	}
 
 	err = infra.InitConfig()
 	if err != nil {
-		log.Fatalln(err)
+		return err
 	}
 
 	err = infra.InitDatabase()
+	if err != nil {
+		return err
+	}
+
+	err = infra.InitRedis()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func main() {
+	err := initAll()
 	if err != nil {
 		log.Fatalln(err)
 	}
