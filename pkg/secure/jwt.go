@@ -69,3 +69,22 @@ func NewToken(id uint64) (string, error) {
 func NewRefreshToken(id uint64) (string, error) {
 	return GenerateToken(id, refreshTime, "refresh")
 }
+
+func ParseToken(tokenString string) (*IDClaims, error) {
+	token, err := jwt.ParseWithClaims(tokenString,&IDClaims{},
+		func(token *jwt.Token) (any, error) {
+			return jwtKey, nil
+		},
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	claims, ok := token.Claims.(*IDClaims)
+	if !ok || !token.Valid {
+		return nil, errors.New("token不合法")
+	}
+
+	return claims, nil
+}

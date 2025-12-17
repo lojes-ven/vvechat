@@ -42,6 +42,8 @@ func main() {
 		log.Fatalln(err)
 	}
 
+	// infra.GetDB().AutoMigrate(&model.User{})
+
 	r := router.Launch()
 	r.Run(":8080")
 }

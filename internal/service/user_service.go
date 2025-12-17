@@ -9,8 +9,9 @@ import (
 	"gorm.io/gorm"
 )
 
-func NewLoginResp(name string, uid string, id uint64) (*model.LoginResp, error) {
-	var resp model.LoginResp
+func NewTokenResp(id uint64) (*model.TokenResp, error) {
+	var resp model.TokenResp
+
 	token, err := secure.NewToken(id)
 	if err != nil {
 		return nil, errors.New("token生成错误" + err.Error())
@@ -24,9 +25,24 @@ func NewLoginResp(name string, uid string, id uint64) (*model.LoginResp, error) 
 	if t <= 0 {
 		return nil, errors.New("生成token时viper解析失败")
 	}
-
 	resp.ExpiresIn = t
 	resp.Token, resp.RefreshToken = token, refreshToken
+
+	return &resp, nil
+}
+
+func NewLoginResp(name string, uid string, id uint64) (*model.LoginResp, error) {
+	var resp model.LoginResp
+
+	tokenClass, err := NewTokenResp(id)
+	if err != nil {
+		return nil, err
+	}
+
+	resp.TokenClass.ExpiresIn = tokenClass.ExpiresIn
+	resp.TokenClass.Token = tokenClass.Token
+	resp.TokenClass.RefreshToken = tokenClass.RefreshToken
+	
 	resp.UserInfo.Name, resp.UserInfo.Uid = name, uid
 
 	return &resp, nil

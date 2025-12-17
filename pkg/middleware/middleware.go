@@ -1,0 +1,47 @@
+package middleware
+
+import (
+	"strings"
+	"vvechat/pkg/response"
+	"vvechat/pkg/secure"
+
+	"github.com/gin-gonic/gin"
+)
+
+func JWTAuth() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		// 1. 从请求头取 Authorization
+		authHeader := c.GetHeader("Authorization")
+		if authHeader == "" {
+			response.Fail(c, 401, "Header错误")
+			c.Abort()
+			return
+		}
+
+		// 2. 检查 Bearer 前缀
+		const prefix = "Bearer "
+		if !strings.HasPrefix(authHeader, prefix) {
+			response.Fail(c, 401, "Type错误")
+			c.Abort()
+			return
+		}
+
+		// 3. 拿到 token
+		tokenString := strings.TrimPrefix(authHeader, prefix)
+
+		// 4. 解析 token
+		claims, err := secure.ParseToken(tokenString)
+		if err != nil {
+			response.Fail(c, 401, err.Error())
+			c.Abort()
+			return
+		}
+
+		// 5. 把信息放进 Context
+		c.Set("id", claims.ID)
+		c.Set("type", claims.Type)
+
+		// 6. 放行
+		c.Next()
+	}
+}

@@ -1,14 +1,17 @@
-**登陆成功后后端返回**
+**登陆成功后 后端POST方法返回**
 
 ```json
 {
-    "code": http状态码
+    "code": 200
     "message": 信息
     "data": 
     {
-    	"token": token
-    	"refresh_token": 用于刷新token
-    	"expires_in": token到期时间（以秒为单位）
+    	"token_class":
+    	{
+    		"token": token
+    		"refresh_token": 用于刷新token
+    		"expires_in": token到期时间（以秒为单位）
+		}
     	"user_info": 
     	{
     		"uid": 微信号
@@ -18,17 +21,18 @@
 }
 ```
 
-**refresh_token的接口**
+**refresh_token前端接口**
 
 ```http
-/refresh_token
+POST /auth/refresh_token
+Authorization: Bearer <refresh_token>
 ```
 
-**refresh_token 成功后返回**
+**refresh_token 成功后 后端POST方法返回**
 
 ```json
 {
-    "code": http状态码
+    "code": 
     "message": 信息
     "data":
     {
@@ -37,6 +41,23 @@
     	"expires_in": token到期时间（秒）
 	}
 }
+```
+
+**refresh_token失败，返回**
+
+```json
+{
+    "code": 状态码
+    "message": 信息
+}
+```
+
+**refresh_token 状态码**
+
+```html
+401: token格式错误或失效
+400: 请求参数错误
+409: 请求有冲突
 ```
 
 
