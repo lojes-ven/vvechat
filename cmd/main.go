@@ -4,6 +4,7 @@ import (
 	"log"
 	"vvechat/internal/router"
 	"vvechat/pkg/infra"
+	"vvechat/pkg/secure"
 	"vvechat/pkg/utils"
 )
 
@@ -24,6 +25,10 @@ func initAll() error {
 	}
 
 	err = infra.InitRedis()
+	if err != nil {
+		return err
+	}
+	err = secure.InitJWT()
 	if err != nil {
 		return err
 	}

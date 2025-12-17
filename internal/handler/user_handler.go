@@ -4,13 +4,14 @@ import (
 	"net/http"
 	"vvechat/internal/model"
 	"vvechat/internal/service"
+
 	"vvechat/pkg/response"
 
 	"github.com/gin-gonic/gin"
 )
 
 func Register(c *gin.Context) {
-	var req RegisterReq
+	var req model.RegisterReq
 	if err := c.ShouldBindJSON(&req); err != nil {
 		response.Fail(c, http.StatusBadRequest, "json解析出错")
 		return
@@ -31,31 +32,31 @@ func Register(c *gin.Context) {
 }
 
 func LoginByUid(c *gin.Context) {
-	var req LoginByUidReq
+	var req model.LoginByUidReq
 	if err := c.ShouldBindJSON(&req); err != nil {
 		response.Fail(c, http.StatusBadRequest, "json解析出错")
 		return
 	}
 
-	err := service.LoginByUid(req.Uid, req.Password)
+	loginResp, err := service.LoginByUid(req.Uid, req.Password)
 	if err != nil {
 		response.Fail(c, http.StatusBadRequest, err.Error())
 	} else {
-		response.Success(c, "登陆成功", nil)
+		response.Success(c, "登陆成功", loginResp)
 	}
 }
 
 func LoginByPhone(c *gin.Context) {
-	var req LoginByPhoneReq
+	var req model.LoginByPhoneReq
 	if err := c.ShouldBindJSON(&req); err != nil {
 		response.Fail(c, http.StatusBadRequest, "json解析出错")
 		return
 	}
 
-	err := service.LoginByPhone(req.PhoneNumber, req.Password)
+	loginResp, err := service.LoginByPhone(req.PhoneNumber, req.Password)
 	if err != nil {
 		response.Fail(c, http.StatusBadRequest, err.Error())
 	} else {
-		response.Success(c, "登陆成功", nil)
+		response.Success(c, "登陆成功", loginResp)
 	}
 }

@@ -2,12 +2,35 @@ package service
 
 import (
 	"errors"
-	"vvechat/pkg/infra"
 	"vvechat/internal/model"
+	"vvechat/pkg/infra"
 	"vvechat/pkg/secure"
 
 	"gorm.io/gorm"
 )
+
+func NewLoginResp(name string, uid string, id uint64) (*model.LoginResp, error) {
+	var resp model.LoginResp
+	token, err := secure.NewToken(id)
+	if err != nil {
+		return nil, errors.New("token生成错误" + err.Error())
+	}
+	refreshToken, err := secure.NewRefreshToken(id)
+	if err != nil {
+		return nil, errors.New("refreshToken生成错误" + err.Error())
+	}
+
+	t := uint64(secure.GetExpiresTime().Seconds())
+	if t <= 0 {
+		return nil, errors.New("生成token时viper解析失败")
+	}
+
+	resp.ExpiresIn = t
+	resp.Token, resp.RefreshToken = token, refreshToken
+	resp.UserInfo.Name, resp.UserInfo.Uid = name, uid
+
+	return &resp, nil
+}
 
 func GetUserByUid(uid string) (*model.User, error) {
 	var user model.User
@@ -80,20 +103,28 @@ func Register(user *model.User) error {
 	return infra.GetDB().Create(user).Error
 }
 
-func LoginByUid(uid string, password string) error {
+func LoginByUid(uid string, password string) (*model.LoginResp, error) {
 	user, err := GetUserByUid(uid)
 	if err != nil {
-		return err
+		return nil, errors.New("登陆失败 微信号或密码错误")
 	}
 
-	return secure.VerifyPassword(user.Password, password)
+	if ok := secure.VerifyPassword(user.Password, password); ok != nil {
+		return nil, errors.New("登陆失败 微信号或密码错误")
+	}
+
+	return NewLoginResp(user.Name, user.Uid, user.ID)
 }
 
-func LoginByPhone(phone string, password string) error {
+func LoginByPhone(phone string, password string) (*model.LoginResp, error) {
 	user, err := GetUserByPhone(phone)
 	if err != nil {
-		return err
+		return nil, errors.New("登陆失败 手机号或密码错误")
 	}
 
-	return secure.VerifyPassword(user.Password, password)
+	if ok := secure.VerifyPassword(user.Password, password); ok != nil {
+		return nil, errors.New("登陆失败 手机号或密码错误")
+	}
+
+	return NewLoginResp(user.Name, user.Uid, user.ID)
 }

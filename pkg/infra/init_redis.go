@@ -26,7 +26,7 @@ func InitRedis() error {
 			Addr:     viper.GetString("redis.addr"),
 			Password: viper.GetString("redis.password"),
 			DB:       viper.GetInt("redis.db"),
-			PoolSize: viper.GetInt("redis.poolSize"),
+			PoolSize: viper.GetInt("redis.pool_size"),
 		})
 
 		if red == nil {

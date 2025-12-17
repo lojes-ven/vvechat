@@ -23,7 +23,7 @@ func NewUser(name string, password string, phone string) (*User, error) {
 		PhoneNumber: phone,
 	}
 
-	id, err := utils.NextUniqueID()
+	id, err := utils.NewUniqueID()
 	if err != nil {
 		return nil, err
 	}

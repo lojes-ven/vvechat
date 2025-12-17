@@ -27,7 +27,7 @@ func InitSnowflake() error {
 }
 
 // NextID 生成全局唯一 ID
-func NextUniqueID() (uint64, error) {
+func NewUniqueID() (uint64, error) {
 	if sf == nil {
 		return 0, errors.New("sonyflake没有初始化!")
 	}
