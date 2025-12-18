@@ -42,7 +42,7 @@ func NewLoginResp(name string, uid string, id uint64) (*model.LoginResp, error) 
 	resp.TokenClass.ExpiresIn = tokenClass.ExpiresIn
 	resp.TokenClass.Token = tokenClass.Token
 	resp.TokenClass.RefreshToken = tokenClass.RefreshToken
-	
+
 	resp.UserInfo.Name, resp.UserInfo.Uid = name, uid
 
 	return &resp, nil
@@ -76,39 +76,35 @@ func GetUserByPhone(phone string) (*model.User, error) {
 	return &user, nil
 }
 
-func IsUidExist(uid string) error {
-	var cnt int64
-	res := infra.GetDB().Model(&model.User{}).Where("uid = ?", uid).Count(&cnt)
-	if res.Error != nil {
-		return res.Error
-	}
+// func IsUidExist(uid string) error {
+// 	var cnt int64
+// 	res := infra.GetDB().Model(&model.User{}).Where("uid = ?", uid).Count(&cnt)
+// 	if res.Error != nil {
+// 		return res.Error
+// 	}
 
-	exist := cnt > 0
-	if exist {
-		return errors.New("微信号重复！")
-	}
-	return nil
-}
+// 	exist := cnt > 0
+// 	if exist {
+// 		return gorm.ErrDuplicatedKey
+// 	}
+// 	return nil
+// }
 
-func IsPhoneNumberExist(phone string) error {
-	var cnt int64
-	res := infra.GetDB().Model(&model.User{}).Where("phone_number = ?", phone).Count(&cnt)
-	if res.Error != nil {
-		return res.Error
-	}
+// func IsPhoneNumberExist(phone string) error {
+// 	var cnt int64
+// 	res := infra.GetDB().Model(&model.User{}).Where("phone_number = ?", phone).Count(&cnt)
+// 	if res.Error != nil {
+// 		return res.Error
+// 	}
 
-	exist := cnt > 0
-	if exist {
-		return errors.New("该手机号已被注册！")
-	}
-	return nil
-}
+// 	exist := cnt > 0
+// 	if exist {
+// 		return gorm.ErrDuplicatedKey
+// 	}
+// 	return nil
+// }
 
 func Register(user *model.User) error {
-	if err := IsPhoneNumberExist(user.PhoneNumber); err != nil {
-		return err
-	}
-
 	pwd, err := secure.HashString(user.Password)
 	if err != nil {
 		return err

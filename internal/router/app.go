@@ -15,9 +15,38 @@ func Launch() *gin.Engine {
 		api.POST("/register", handler.Register)
 		api.POST("/login/uid", handler.LoginByUid)
 		api.POST("/login/phone_number", handler.LoginByPhone)
+		api.POST("/auth/refresh_token", middleware.RefreshAuth(), handler.RefreshToken)
+
 		auth := api.Group("/auth", middleware.JWTAuth())
 		{
-			auth.POST("/refresh_token", handler.RefreshToken)
+			auth.PATCH("/me/uid", handler.ReviseUid) //修改微信号
+
+			converse := auth.Group("/conversations")
+			{
+				converse.GET("")                  //加载聊天列表
+				converse.POST("/private")         //创建私聊
+				converse.GET("/:conversation_id") //加载聊天窗口
+			}
+
+			request := auth.Group("/friendship_requests")
+			{
+				request.GET("")              //加载好友申请列表
+				request.POST("")             //发送好友申请
+				request.POST("/:request_id") //同意或拒绝好友申请
+			}
+
+			friendship := auth.Group("/friendships")
+			{
+				friendship.GET("")               //加载好友列表
+				friendship.DELETE("/:friend_id") //删除好友
+			}
+
+			message := auth.Group("/messages")
+			{
+				message.POST("")               //发送消息
+				message.DELETE("/:message_id") //撤回消息
+			}
+
 		}
 	}
 

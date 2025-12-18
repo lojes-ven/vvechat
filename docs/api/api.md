@@ -60,9 +60,266 @@ Authorization: Bearer <refresh_token>
 409: 请求有冲突
 ```
 
+- **用户修改自己的微信号**
 
+  前端接口
 
+  ```http
+  PATCH api/auth/me/uid
+  json
+  {
+  	"new_uid": 新的微信号
+  }
+  Authorization: Bearer <token>
+  ```
 
+  成功后端返回：
+
+  ```json
+  {
+      "code":  200
+      "message": 信息
+  }
+  ```
+
+  失败后端返回：
+
+  ```json
+  {
+      "code":  400 / 401
+      "message": 信息
+  }
+  ```
+
+- **打开微信时， 加载聊天会话列表**
+
+  加载会话列表前端接口：
+
+  ```http
+  GET api/auth/conversations
+  Authorization: Bearer <token>
+  ```
+
+  成功后端返回：
+
+  ```json
+  ```
+
+  失败后端返回：
+
+  ```json
+  
+  ```
+
+- **用户点击“通讯录”，加载好友列表**
+
+  加载好友列表前端接口：
+
+  ```http
+  GET api/auth/friendships
+  Authorization: Bearer <token>
+  ```
+
+  成功后端返回：
+
+  ```json
+  
+  ```
+
+  失败后端返回：
+
+  ```json
+  
+  ```
+
+- **用户点击“好友申请”， 加载好友申请列表**
+
+  前端接口：
+
+  ```http
+  GET api/auth/friendship_requests
+  Authorization: Bearer <token>
+  ```
+
+  成功后端返回：
+
+  ```json
+  
+  ```
+
+  失败后端返回：
+
+  ```json
+  
+  ```
+
+- **发送好友申请操作**
+
+  前端接口：
+
+  ```http
+  POST api/auth/friendship_requests
+  json
+  {
+  	"friend_id": 谁收到这个好友申请
+  	"verification_message": 发送者写的验证消息
+  }
+  Authorization: Bearer <token>
+  ```
+
+  成功后端返回：
+
+  ```json
+  
+  ```
+
+  失败后端返回：
+
+  ```json
+  
+  ```
+
+- **同意/拒绝 好友申请操作**
+
+  前端接口
+
+  ```http
+  # 同意
+  POST api/auth/friendship_requests/{request_id}
+  json
+  {
+  	"status": "accepted" | "rejected"  #同意还是拒绝
+  }
+  Authorization: Bearer <token>
+  ```
+
+  成功后端返回：
+
+  ```json
+  
+  ```
+
+  失败后端返回：
+
+  ```json
+  
+  ```
+
+- **删除好友操作**
+
+  前端接口
+
+  ```http
+  DELETE api/auth/friendships/{friend_id #对方的id}
+  Authorization: Bearer <token>
+  ```
+
+  成功后端返回：
+
+  ```json
+  
+  ```
+
+  失败后端返回：
+
+  ```json
+  
+  ```
+
+- **创建私聊操作（表现为用户点击好友，再点击发消息）**
+
+  前端接口
+
+  ```http
+  POST api/auth/conversations/private
+  json
+  {
+  	"friend_id": 给谁发
+  }
+  Authorization: Bearer <token>
+  ```
+
+  成功后端返回：
+
+  ```json
+  
+  ```
+
+  失败后端返回：
+
+  ```json
+  
+  ```
+
+- **会话详情（表现为用户点击进入聊天窗口）**
+
+  前端接口
+
+  ```http
+  GET api/auth/conversations/{conversation_id}
+  Authorization: Bearer <token>
+  ```
+
+  成功后端返回：
+
+  ```json
+  
+  ```
+
+  失败后端返回：
+
+  ```json
+  
+  ```
+
+- **私发消息**
+
+  前端接口
+
+  ```http
+  POST api/auth/messages
+  json
+  {
+  	"friend_id": 给谁发
+  	"message": 消息内容
+  }
+  Authorization: Bearer <token>
+  ```
+
+  成功后端返回：
+
+  ```json
+  
+  ```
+
+  失败后端返回：
+
+  ```json
+  
+  ```
+
+- **撤回消息**
+
+  前端接口
+
+  ```http
+  DELETE api/auth/message/{message_id}
+  Authorization: Bearer <token>
+  ```
+
+  成功后端返回：
+
+  ```json
+  
+  ```
+
+  失败后端返回：
+
+  ```json
+  
+  ```
+
+  
 
 
 

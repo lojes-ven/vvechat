@@ -5,6 +5,7 @@ import (
 	"vvechat/internal/model"
 	"vvechat/internal/service"
 
+	"vvechat/pkg/judge"
 	"vvechat/pkg/response"
 
 	"github.com/gin-gonic/gin"
@@ -25,7 +26,11 @@ func Register(c *gin.Context) {
 
 	err = service.Register(user)
 	if err != nil {
-		response.Fail(c, http.StatusBadRequest, err.Error())
+		if judge.IsUniqueConflict(err) {
+			response.Fail(c, http.StatusBadRequest, "手机号已存在")
+		} else {
+			response.Fail(c, 500, "数据库错误")
+		}
 	} else {
 		response.Success(c, "注册成功", nil)
 	}

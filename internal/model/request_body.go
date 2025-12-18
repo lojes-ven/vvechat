@@ -15,3 +15,7 @@ type LoginByPhoneReq struct {
 	PhoneNumber string `json:"phone_number" binding:"required,len=11,numeric"`
 	Password    string `json:"password" binding:"required,min=6,max=72"`
 }
+
+type ReviseUidReq struct {
+	NewUid string `json:"new_uid" binding:"required,min=1,max=20"`
+}
