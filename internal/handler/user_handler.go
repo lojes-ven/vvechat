@@ -11,7 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// 注册操作
+// Register 注册操作
 func Register(c *gin.Context) {
 	var req model.RegisterReq
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -37,8 +37,7 @@ func Register(c *gin.Context) {
 	}
 }
 
-
-// 微信号登陆操作
+// LoginByUid 微信号登陆操作
 func LoginByUid(c *gin.Context) {
 	var req model.LoginByUidReq
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -54,8 +53,7 @@ func LoginByUid(c *gin.Context) {
 	}
 }
 
-
-// 手机号登陆操作
+// LoginByPhone 手机号登陆操作
 func LoginByPhone(c *gin.Context) {
 	var req model.LoginByPhoneReq
 	if err := c.ShouldBindJSON(&req); err != nil {

@@ -28,9 +28,9 @@ func ReviseUid(c *gin.Context) {
 		response.Fail(c, 400, "json解析出错")
 		return
 	}
-	new_uid := req.NewUid
+	newUid := req.NewUid
 
-	err := service.ReviseUid(id, new_uid)
+	err := service.ReviseUid(id, newUid)
 	if err != nil {
 		if judge.IsUniqueConflict(err) {
 			response.Fail(c, 400, "微信号重复")

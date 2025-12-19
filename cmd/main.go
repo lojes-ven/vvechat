@@ -47,5 +47,8 @@ func main() {
 	// infra.GetDB().AutoMigrate(&model.FriendshipRequest{})
 
 	r := router.Launch()
-	r.Run(":8080")
+	err = r.Run(":8080")
+	if err != nil {
+		log.Fatalln("路由器Run出错")
+	}
 }

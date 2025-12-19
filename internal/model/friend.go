@@ -4,14 +4,14 @@ import (
 	"gorm.io/gorm"
 )
 
-// 好友关系表
+// Friendship 好友关系表
 type Friendship struct {
 	gorm.Model
 	UserID   uint64 `gorm:"type:bigint;not null;index:idx_user_friend,unique"`
 	FriendID uint64 `gorm:"type:bigint;not null;index:idx_user_friend,unique"`
 }
 
-// 好友申请列表
+// FriendshipRequest 好友申请列表
 type FriendshipRequest struct {
 	gorm.Model
 	SenderID            uint64 `gorm:"type:bigint;not null;index:idx_sender_receiver,unique"`

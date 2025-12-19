@@ -9,10 +9,10 @@ func RefreshToken(id uint64) (*model.TokenResp, error) {
 	return NewTokenResp(id)
 }
 
-func ReviseUid(id uint64, new_uid string) error {
+func ReviseUid(id uint64, newUid string) error {
 	return infra.GetDB().
 		Model(&model.User{}).
 		Where("id = ?", id).
-		Update("uid", new_uid).
+		Update("uid", newUid).
 		Error
 }

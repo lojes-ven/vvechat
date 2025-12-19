@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	jwtKey []byte
+	jwtKey      []byte
 	expiresTime time.Duration
 	refreshTime time.Duration
 )
@@ -35,19 +35,19 @@ func GetRefreshtime() time.Duration {
 }
 
 type IDClaims struct {
-	ID uint64 `json:"id"`
+	ID   uint64 `json:"id"`
 	Type string `json:"type"`
 	jwt.RegisteredClaims
 }
 
-func GenerateToken(id uint64, t time.Duration, token_type string) (string, error) {
+func GenerateToken(id uint64, t time.Duration, tokenType string) (string, error) {
 	if string(jwtKey) == "" {
 		return "", errors.New("jwtKey在生成Token时发现是空的")
 	}
 
 	claims := IDClaims{
-		ID: id,
-		Type: token_type,
+		ID:   id,
+		Type: tokenType,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(t)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
@@ -71,7 +71,7 @@ func NewRefreshToken(id uint64) (string, error) {
 }
 
 func ParseToken(tokenString string) (*IDClaims, error) {
-	token, err := jwt.ParseWithClaims(tokenString,&IDClaims{},
+	token, err := jwt.ParseWithClaims(tokenString, &IDClaims{},
 		func(token *jwt.Token) (any, error) {
 			return jwtKey, nil
 		},

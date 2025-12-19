@@ -12,7 +12,7 @@ func IsNotFound(err error) bool {
 	return errors.Is(err, gorm.ErrRecordNotFound)
 }
 
-// 判断是否是“唯一约束冲突” 若为真则说明冲突
+// IsUniqueConflict 判断是否是“唯一约束冲突” 若为真则说明冲突
 func IsUniqueConflict(err error) bool {
 	var pgErr *pgconn.PgError
 	if errors.As(err, &pgErr) {

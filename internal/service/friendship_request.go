@@ -5,9 +5,10 @@ import (
 	"vvechat/pkg/infra"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
-// 发送好友申请操作
+// SendFriendRequest 发送好友申请操作
 func SendFriendRequest(senderID, receiverID uint64, msg string, senderName string) error {
 	if senderID == receiverID {
 		return gorm.ErrInvalidData
@@ -22,7 +23,7 @@ func SendFriendRequest(senderID, receiverID uint64, msg string, senderName strin
 		Error
 }
 
-// 加载好友申请列表操作
+// FriendRequestList 加载好友申请列表操作
 func FriendRequestList(receiverID uint64) ([]model.FriendRequestListResp, error) {
 	respSlice := make([]model.FriendRequestListResp, 0)
 
@@ -36,4 +37,63 @@ func FriendRequestList(receiverID uint64) ([]model.FriendRequestListResp, error)
 	}
 
 	return respSlice, nil
+}
+
+// FriendRequestAccept 通过好友申请
+func FriendRequestAccept(id uint64) error {
+	return infra.GetDB().Transaction(func(tx *gorm.DB) error {
+
+		var req model.FriendshipRequest
+
+		if err := tx.
+			Clauses(clause.Locking{Strength: "UPDATE"}).
+			Where("id = ? AND status = ?", id, "pending").
+			First(&req).
+			Error; err != nil {
+			return err
+		}
+
+		if err := tx.Model(&req).
+			Update("status", "accepted").
+			Error; err != nil {
+			return err
+		}
+
+		err := createFriendship(tx, req.SenderID, req.ReceiverID)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	})
+}
+
+// FriendRequestReject 拒绝好友申请
+func FriendRequestReject(requestID uint64) error {
+	return infra.GetDB().
+		Model(&model.FriendshipRequest{}).
+		Where("id = ? AND status = ?", requestID, "pending").
+		Update("status", "rejected").
+		Error
+}
+
+func createFriendship(tx *gorm.DB, id1, id2 uint64) error {
+	res := tx.Model(&model.Friendship{}).
+		Create(&model.Friendship{
+			UserID:   id1,
+			FriendID: id2,
+		})
+	if res.Error != nil {
+		return res.Error
+	}
+
+	res = tx.Model(&model.Friendship{}).
+		Create(&model.Friendship{
+			UserID:   id2,
+			FriendID: id1,
+		})
+	if res.Error != nil {
+		return res.Error
+	}
+	return nil
 }

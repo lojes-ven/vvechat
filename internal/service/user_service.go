@@ -93,12 +93,11 @@ func isPKExist(id uint64) error {
 	// exists == 1 → 存在
 	if exists == 1 {
 		return nil
-	} else {
-		return gorm.ErrInvalidData
 	}
+	return gorm.ErrInvalidData
 }
 
-// 注册操作
+// Register 注册操作
 func Register(user *model.User) error {
 	pwd, err := secure.HashString(user.Password)
 	if err != nil {
@@ -110,7 +109,7 @@ func Register(user *model.User) error {
 	return infra.GetDB().Create(user).Error
 }
 
-// 微信号登陆操作
+// LoginByUid 微信号登陆操作
 func LoginByUid(uid string, password string) (*model.LoginResp, error) {
 	user, err := getUserByUid(uid)
 	if err != nil {
@@ -124,7 +123,7 @@ func LoginByUid(uid string, password string) (*model.LoginResp, error) {
 	return NewLoginResp(user.Name, user.Uid, user.ID)
 }
 
-// 手机号登陆操作
+// LoginByPhone 手机号登陆操作
 func LoginByPhone(phone string, password string) (*model.LoginResp, error) {
 	user, err := getUserByPhone(phone)
 	if err != nil {

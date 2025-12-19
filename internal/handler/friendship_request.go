@@ -2,6 +2,7 @@ package handler
 
 import (
 	"errors"
+	"strconv"
 	"vvechat/internal/model"
 	"vvechat/internal/service"
 	"vvechat/pkg/judge"
@@ -11,7 +12,7 @@ import (
 	"gorm.io/gorm"
 )
 
-// 发送好友申请操作
+// SendFriendRequest 发送好友申请操作
 func SendFriendRequest(c *gin.Context) {
 	senderID := c.GetUint64("id")
 	var req model.AddFriendReq
@@ -35,7 +36,7 @@ func SendFriendRequest(c *gin.Context) {
 	response.Success(c, "发送成功", nil)
 }
 
-// 加载好友申请列表操作
+// FriendRequestList 加载好友申请列表操作
 func FriendRequestList(c *gin.Context) {
 	receiverID := c.GetUint64("id")
 
@@ -46,4 +47,38 @@ func FriendRequestList(c *gin.Context) {
 	}
 
 	response.Success(c, "success", respSlice)
+}
+
+// FriendRequestAction 通过/拒绝好友请求操作
+func FriendRequestAction(c *gin.Context) {
+	requestID := c.Param("request_id")
+	id, err := strconv.ParseUint(requestID, 10, 64)
+	if err != nil {
+		response.Fail(c, 400, "requestID错误")
+		return
+	}
+
+	var req model.FriendRequestActionReq
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.Fail(c, 400, "JSON错误")
+		return
+	}
+
+	if req.Status == "accepted" {
+		err := service.FriendRequestAccept(id)
+		if err != nil {
+			response.Fail(c, 500, "服务器错误")
+			return
+		}
+	} else if req.Status == "rejected" {
+		err := service.FriendRequestReject(id)
+		if err != nil {
+			response.Fail(c, 500, "服务器错误")
+			return
+		}
+	} else {
+		response.Fail(c, 400, "status错误")
+		return
+	}
+	response.Success(c, "success", nil)
 }
