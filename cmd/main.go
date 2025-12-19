@@ -42,7 +42,9 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	// infra.GetDB().AutoMigrate(&model.User{})
+	//infra.GetDB().AutoMigrate(&model.User{})
+	//infra.GetDB().AutoMigrate(&model.Friendship{})
+	// infra.GetDB().AutoMigrate(&model.FriendshipRequest{})
 
 	r := router.Launch()
 	r.Run(":8080")

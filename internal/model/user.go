@@ -16,7 +16,7 @@ type User struct {
 	Region      string         `gorm:"type:varchar(32)"`
 	PhoneNumber string         `gorm:"type:varchar(20);not null;uniqueIndex"`
 	Signature   string         `gorm:"type:varchar(128);"`
-	Gender      string         `gorm:"type:varchar(12);"`
+	Gender      string         `gorm:"type:varchar(12);check:gender IN ('male','female','')"`
 	DeletedAt   gorm.DeletedAt `gorm:"index"`
 	CreatedAt   time.Time      `gorm:"not null;autoCreateTime"`
 }

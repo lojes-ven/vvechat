@@ -30,9 +30,9 @@ func Launch() *gin.Engine {
 
 			request := auth.Group("/friendship_requests")
 			{
-				request.GET("")              //加载好友申请列表
-				request.POST("")             //发送好友申请
-				request.POST("/:request_id") //同意或拒绝好友申请
+				request.GET("", handler.FriendRequestList)  //加载好友申请列表
+				request.POST("", handler.SendFriendRequest) //发送好友申请
+				request.POST("/:request_id")                //同意或拒绝好友申请
 			}
 
 			friendship := auth.Group("/friendships")

@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// RefreshToken专属中间件
 func RefreshAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// 1. 从请求头取 Authorization

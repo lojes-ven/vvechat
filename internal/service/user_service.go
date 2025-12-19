@@ -48,7 +48,7 @@ func NewLoginResp(name string, uid string, id uint64) (*model.LoginResp, error) 
 	return &resp, nil
 }
 
-func GetUserByUid(uid string) (*model.User, error) {
+func getUserByUid(uid string) (*model.User, error) {
 	var user model.User
 	res := infra.GetDB().Where("uid = ?", uid).First(&user)
 
@@ -62,7 +62,7 @@ func GetUserByUid(uid string) (*model.User, error) {
 	return &user, nil
 }
 
-func GetUserByPhone(phone string) (*model.User, error) {
+func getUserByPhone(phone string) (*model.User, error) {
 	var user model.User
 	res := infra.GetDB().Where("phone_number = ?", phone).First(&user)
 
@@ -76,34 +76,29 @@ func GetUserByPhone(phone string) (*model.User, error) {
 	return &user, nil
 }
 
-// func IsUidExist(uid string) error {
-// 	var cnt int64
-// 	res := infra.GetDB().Model(&model.User{}).Where("uid = ?", uid).Count(&cnt)
-// 	if res.Error != nil {
-// 		return res.Error
-// 	}
+// 如果数据库查询未出现问题且主键存在返回nil，主键不存在返回invalidData，数据库问题直接返回Error
+func isPKExist(id uint64) error {
+	var exists int
+	err := infra.GetDB().
+		Model(&model.User{}).
+		Select("1").
+		Where("id = ?", id).
+		Limit(1).
+		Scan(&exists).Error
 
-// 	exist := cnt > 0
-// 	if exist {
-// 		return gorm.ErrDuplicatedKey
-// 	}
-// 	return nil
-// }
+	if err != nil {
+		return err
+	}
 
-// func IsPhoneNumberExist(phone string) error {
-// 	var cnt int64
-// 	res := infra.GetDB().Model(&model.User{}).Where("phone_number = ?", phone).Count(&cnt)
-// 	if res.Error != nil {
-// 		return res.Error
-// 	}
+	// exists == 1 → 存在
+	if exists == 1 {
+		return nil
+	} else {
+		return gorm.ErrInvalidData
+	}
+}
 
-// 	exist := cnt > 0
-// 	if exist {
-// 		return gorm.ErrDuplicatedKey
-// 	}
-// 	return nil
-// }
-
+// 注册操作
 func Register(user *model.User) error {
 	pwd, err := secure.HashString(user.Password)
 	if err != nil {
@@ -115,8 +110,9 @@ func Register(user *model.User) error {
 	return infra.GetDB().Create(user).Error
 }
 
+// 微信号登陆操作
 func LoginByUid(uid string, password string) (*model.LoginResp, error) {
-	user, err := GetUserByUid(uid)
+	user, err := getUserByUid(uid)
 	if err != nil {
 		return nil, errors.New("登陆失败 微信号或密码错误")
 	}
@@ -128,8 +124,9 @@ func LoginByUid(uid string, password string) (*model.LoginResp, error) {
 	return NewLoginResp(user.Name, user.Uid, user.ID)
 }
 
+// 手机号登陆操作
 func LoginByPhone(phone string, password string) (*model.LoginResp, error) {
-	user, err := GetUserByPhone(phone)
+	user, err := getUserByPhone(phone)
 	if err != nil {
 		return nil, errors.New("登陆失败 手机号或密码错误")
 	}

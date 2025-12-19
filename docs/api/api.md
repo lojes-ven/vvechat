@@ -2,19 +2,19 @@
 
 ```json
 {
-    "code": 200
-    "message": 信息
+    "code": 200,
+    "message": 信息,
     "data": 
     {
     	"token_class":
     	{
-    		"token": token
-    		"refresh_token": 用于刷新token
+    		"token": token,
+    		"refresh_token": 用于刷新token,
     		"expires_in": token到期时间（以秒为单位）
-		}
+		},
     	"user_info": 
     	{
-    		"uid": 微信号
+    		"uid": 微信号,
     		"name": 昵称
 		}
 	}
@@ -32,13 +32,13 @@ Authorization: Bearer <refresh_token>
 
 ```json
 {
-    "code": 
-    "message": 信息
+    "code": ,
+    "message": 信息,
     "data":
     {
-    	"token": 刷新之后的token
-    	"refresh_token": 新的用于刷新的token
-    	"expires_in": token到期时间（秒）
+    	"token": 刷新之后的token,
+    	"refresh_token": 新的用于刷新的token,
+    	"expires_in": token到期时间（秒）,
 	}
 }
 ```
@@ -47,7 +47,7 @@ Authorization: Bearer <refresh_token>
 
 ```json
 {
-    "code": 状态码
+    "code": 状态码,
     "message": 信息
 }
 ```
@@ -77,7 +77,7 @@ Authorization: Bearer <refresh_token>
 
   ```json
   {
-      "code":  200
+      "code":  200,
       "message": 信息
   }
   ```
@@ -86,7 +86,7 @@ Authorization: Bearer <refresh_token>
 
   ```json
   {
-      "code":  400 / 401
+      "code":  400 / 401,
       "message": 信息
   }
   ```
@@ -144,13 +144,30 @@ Authorization: Bearer <refresh_token>
   成功后端返回：
 
   ```json
-  
+  {
+      "code":  200,
+      "message": 信息,
+      "data":[
+      	{
+              "request_id":表主键,
+           	"sender_id":主键,
+           	"sender_name":昵称,
+           	"verification_message":验证消息,
+           	"status":状态,
+              "created_at": 好友申请发送时间
+          },
+  		{……}
+      ]
+  }
   ```
 
   失败后端返回：
 
   ```json
-  
+  {
+      "code":  400 / 401 / 500 / 409,
+      "message": 信息
+  }
   ```
 
 - **发送好友申请操作**
@@ -161,7 +178,8 @@ Authorization: Bearer <refresh_token>
   POST api/auth/friendship_requests
   json
   {
-  	"friend_id": 谁收到这个好友申请
+  	"sender_name": 发送者的昵称,
+  	"receiver_id": 谁收到这个好友申请,
   	"verification_message": 发送者写的验证消息
   }
   Authorization: Bearer <token>
@@ -170,13 +188,19 @@ Authorization: Bearer <refresh_token>
   成功后端返回：
 
   ```json
-  
+  {
+      "code":  200,
+      "message": 信息
+  }
   ```
 
   失败后端返回：
 
   ```json
-  
+  {
+      "code":  400 / 401 / 500 / 409,
+      "message": 信息
+  }
   ```
 
 - **同意/拒绝 好友申请操作**
@@ -196,13 +220,19 @@ Authorization: Bearer <refresh_token>
   成功后端返回：
 
   ```json
-  
+  {
+      "code":  200,
+      "message": 信息
+  }
   ```
 
   失败后端返回：
 
   ```json
-  
+  {
+      "code":  400 / 401 / 500 / 409,
+      "message": 信息
+  }
   ```
 
 - **删除好友操作**
