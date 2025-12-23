@@ -7,8 +7,9 @@ import (
 // Friendship 好友关系表
 type Friendship struct {
 	gorm.Model
-	UserID   uint64 `gorm:"type:bigint;not null;index:idx_user_friend,unique"`
-	FriendID uint64 `gorm:"type:bigint;not null;index:idx_user_friend,unique"`
+	UserID       uint64 `gorm:"type:bigint;not null;index:idx_user_friend,unique"`
+	FriendID     uint64 `gorm:"type:bigint;not null;index:idx_user_friend,unique"`
+	FriendRemark string `gorm:"type:varchar(64);not null"`
 }
 
 // FriendshipRequest 好友申请列表
@@ -21,10 +22,11 @@ type FriendshipRequest struct {
 	Status              string `gorm:"type:varchar(16);not null;check:status IN ('pending','accepted','rejected','canceled')"`
 }
 
-func NewFriendship(id1, id2 uint64) *Friendship {
+func NewFriendship(userID, friendID uint64, remark string) *Friendship {
 	return &Friendship{
-		UserID:   id1,
-		FriendID: id2,
+		UserID:       userID,
+		FriendID:     friendID,
+		FriendRemark: remark,
 	}
 }
 

@@ -44,3 +44,9 @@ type FriendRequestListResp struct {
 	Status              string    `json:"status"`
 	CreatedAt           time.Time `json:"created_at"`
 }
+
+type FriendshipListResp struct {
+	FriendshipID uint64 `json:"friendship_id"`
+	FriendRemark string `json:"friend_remark"`
+	FriendID     uint64 `json:"friend_id"`
+}

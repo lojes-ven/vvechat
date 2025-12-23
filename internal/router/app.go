@@ -37,8 +37,8 @@ func Launch() *gin.Engine {
 
 			friendship := auth.Group("/friendships")
 			{
-				friendship.GET("")               //加载好友列表
-				friendship.DELETE("/:friend_id") //删除好友
+				friendship.GET("", handler.FriendshipList)                 //加载好友列表
+				friendship.DELETE("/:friend_id", handler.DeleteFriendship) //删除好友
 			}
 
 			message := auth.Group("/messages")

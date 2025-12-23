@@ -123,13 +123,27 @@ Authorization: Bearer <refresh_token>
   成功后端返回：
 
   ```json
-  
+  {
+      "code":  200,
+      "message": 信息,
+      "data":[
+      	{
+              "friendship_id":表主键,
+           	"friend_name":好友昵称,
+              "friend_id":好友主键，
+          },
+  		{……}
+      ]
+  }
   ```
 
   失败后端返回：
 
   ```json
-  
+  {
+      "code":  400 / 401 / 500 / 409,
+      "message": 信息
+  }
   ```
 
 - **用户点击“好友申请”， 加载好友申请列表**
@@ -247,13 +261,19 @@ Authorization: Bearer <refresh_token>
   成功后端返回：
 
   ```json
-  
+  {
+      "code":  200,
+      "message": 信息
+  }
   ```
 
   失败后端返回：
 
   ```json
-  
+  {
+      "code":  400 / 401 / 500 / 409,
+      "message": 信息
+  }
   ```
 
 - **创建私聊操作（表现为用户点击好友，再点击发消息）**

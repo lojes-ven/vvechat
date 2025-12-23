@@ -76,24 +76,3 @@ func FriendRequestReject(requestID uint64) error {
 		Update("status", "rejected").
 		Error
 }
-
-func createFriendship(tx *gorm.DB, id1, id2 uint64) error {
-	res := tx.Model(&model.Friendship{}).
-		Create(&model.Friendship{
-			UserID:   id1,
-			FriendID: id2,
-		})
-	if res.Error != nil {
-		return res.Error
-	}
-
-	res = tx.Model(&model.Friendship{}).
-		Create(&model.Friendship{
-			UserID:   id2,
-			FriendID: id1,
-		})
-	if res.Error != nil {
-		return res.Error
-	}
-	return nil
-}
