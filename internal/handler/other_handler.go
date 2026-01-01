@@ -15,6 +15,7 @@ func RefreshToken(c *gin.Context) {
 	resp, err := service.RefreshToken(id)
 	if err != nil {
 		response.Fail(c, 500, "token出现问题"+err.Error())
+		return
 	}
 
 	response.Success(c, 201, "success", resp)

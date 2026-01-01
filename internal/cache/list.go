@@ -1,6 +1,7 @@
-package list
+package cache
 
 type Node struct {
+	Key  uint64
 	Val  any
 	next *Node
 	prev *Node
@@ -32,8 +33,9 @@ func (list *List) Empty() bool {
 }
 
 // InsertFront 头插法
-func (list *List) InsertFront(val any) {
+func (list *List) InsertFront(key uint64, val any) {
 	node := &Node{
+		Key: key,
 		Val: val,
 	}
 	node.next = list.head.next

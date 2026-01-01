@@ -53,7 +53,7 @@ type FriendRequestListResp struct {
 
 // FriendshipListResp 好友列表返回体
 type FriendshipListResp struct {
-	FriendshipID uint64 `json:"friendship_id"`
+	FriendshipID uint64 `gorm:"column:id" json:"friendship_id"` // friend_ships 表的主键
 	FriendRemark string `json:"friend_remark"`
 	FriendID     uint64 `json:"friend_id"`
 }

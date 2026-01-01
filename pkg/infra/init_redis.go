@@ -29,8 +29,10 @@ func InitRedis() error {
 			PoolSize: viper.GetInt("redis.pool_size"),
 		})
 
-		if red == nil {
-			redisInitErr = errors.New("redis初始化失败")
+		// 使用 Ping 来验证连接
+		_, err := red.Ping().Result()
+		if err != nil {
+			redisInitErr = errors.New("redis连接失败:  " + err.Error())
 		}
 	})
 
