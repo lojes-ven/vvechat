@@ -42,3 +42,15 @@ func ReviseUid(c *gin.Context) {
 
 	response.Success(c, 201, "success", nil)
 }
+
+func FriendInfo(c *gin.Context) {
+
+}
+
+func StrangerInfo(c *gin.Context) {
+
+}
+
+func RecentVisit(c *gin.Context) {
+
+}

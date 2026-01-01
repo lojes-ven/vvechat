@@ -1,5 +1,11 @@
 package model
 
+import (
+	"vvechat/pkg/utils"
+
+	"gorm.io/gorm"
+)
+
 // Friendship 好友关系表
 type Friendship struct {
 	MyModel
@@ -34,4 +40,15 @@ func NewFriendshipRequest(senderID, receiverID uint64, msg string, senderName st
 		VerificationMessage: msg,
 		Status:              "pending",
 	}
+}
+
+func (f *FriendshipRequest) BeforeCreate(db *gorm.DB) error {
+	f.ID = utils.NewUniqueID()
+	return nil
+}
+
+func (f *Friendship) BeforeCreate(db *gorm.DB) error {
+	f.ID = utils.NewUniqueID()
+
+	return nil
 }

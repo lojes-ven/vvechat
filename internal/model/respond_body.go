@@ -22,6 +22,12 @@ type StrangerInfoResp struct {
 	Name string `json:"name"`
 }
 
+// RecentVisitResp 最近访问的人返回体
+type RecentVisitResp struct {
+	ID   uint64 `json:"id"`
+	Name string `json:"name"`
+}
+
 // TokenResp 刷新token操作返回体
 type TokenResp struct {
 	Token        string `json:"token"`

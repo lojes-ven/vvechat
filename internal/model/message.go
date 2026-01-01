@@ -1,5 +1,11 @@
 package model
 
+import (
+	"vvechat/pkg/utils"
+
+	"gorm.io/gorm"
+)
+
 const (
 	DEFAULT uint8 = iota
 	RECALLED
@@ -40,4 +46,24 @@ type ConversationUser struct {
 	UnreadCount    int    `gorm:"type:int;default:0"`
 	IsPinned       bool   `gorm:"type:boolean;default:false"`
 	Remark         string `gorm:"varchar(32)"`
+}
+
+func (m *Message) BeforeCreate(db *gorm.DB) error {
+	m.ID = utils.NewUniqueID()
+	return nil
+}
+
+func (m *MessageUser) BeforeCreate(db *gorm.DB) error {
+	m.ID = utils.NewUniqueID()
+	return nil
+}
+
+func (c *Conversation) BeforeCreate(db *gorm.DB) error {
+	c.ID = utils.NewUniqueID()
+	return nil
+}
+
+func (c *ConversationUser) BeforeCreate(db *gorm.DB) error {
+	c.ID = utils.NewUniqueID()
+	return nil
 }

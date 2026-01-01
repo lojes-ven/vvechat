@@ -1,6 +1,7 @@
 package service
 
 import (
+	"log"
 	"vvechat/internal/model"
 	"vvechat/pkg/infra"
 
@@ -16,6 +17,7 @@ func FriendshipList(userID uint64) ([]model.FriendshipListResp, error) {
 		Find(&resp)
 
 	if res.Error != nil {
+		log.Println(res.Error)
 		return nil, res.Error
 	}
 
@@ -33,6 +35,7 @@ func createFriendship(tx *gorm.DB, userID, friendID uint64) error {
 		Scan(&friendName)
 
 	if err != nil {
+		log.Println(err)
 		return err
 	}
 
@@ -43,18 +46,21 @@ func createFriendship(tx *gorm.DB, userID, friendID uint64) error {
 		Scan(&userName)
 
 	if err != nil {
+		log.Println(err)
 		return err
 	}
 
 	res := tx.Model(&model.Friendship{}).
 		Create(model.NewFriendship(userID, friendID, friendName))
 	if res.Error != nil {
+		log.Println(res.Error)
 		return res.Error
 	}
 
 	res = tx.Model(&model.Friendship{}).
 		Create(model.NewFriendship(friendID, userID, userName))
 	if res.Error != nil {
+		log.Println(res.Error)
 		return res.Error
 	}
 	return nil
@@ -66,10 +72,12 @@ func DeleteFriendship(userID, friendID uint64) error {
 		Delete(&model.Friendship{})
 
 	if res.Error != nil {
+		log.Println(res.Error)
 		return res.Error
 	}
 
 	if res.RowsAffected == 0 {
+		log.Println("删除好友操作影响了0行表")
 		return gorm.ErrRecordNotFound
 	}
 

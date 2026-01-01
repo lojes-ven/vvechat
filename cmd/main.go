@@ -9,7 +9,7 @@ import (
 )
 
 func initAll() error {
-	err := utils.InitSnowflake()
+	err := utils.InitSnowflake(666)
 	if err != nil {
 		return err
 	}

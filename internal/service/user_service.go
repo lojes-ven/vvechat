@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"log"
 	"vvechat/internal/model"
 	"vvechat/pkg/infra"
 	"vvechat/pkg/secure"
@@ -14,15 +15,18 @@ func NewTokenResp(id uint64) (*model.TokenResp, error) {
 
 	token, err := secure.NewToken(id)
 	if err != nil {
+		log.Println(err)
 		return nil, errors.New("token生成错误" + err.Error())
 	}
 	refreshToken, err := secure.NewRefreshToken(id)
 	if err != nil {
+		log.Println(err)
 		return nil, errors.New("refreshToken生成错误" + err.Error())
 	}
 
 	t := uint64(secure.GetExpiresTime().Seconds())
 	if t <= 0 {
+		log.Println("生成token时viper解析失败")
 		return nil, errors.New("生成token时viper解析失败")
 	}
 	resp.ExpiresIn = t
@@ -36,6 +40,7 @@ func NewLoginResp(name string, uid string, id uint64) (*model.LoginResp, error) 
 
 	tokenClass, err := NewTokenResp(id)
 	if err != nil {
+		log.Println(err)
 		return nil, err
 	}
 
@@ -56,6 +61,7 @@ func getUserByUid(uid string) (*model.User, error) {
 		if errors.Is(res.Error, gorm.ErrRecordNotFound) {
 			return nil, errors.New("微信号不存在！")
 		}
+		log.Println(res.Error)
 		return nil, res.Error
 	}
 
@@ -70,6 +76,7 @@ func getUserByPhone(phone string) (*model.User, error) {
 		if errors.Is(res.Error, gorm.ErrRecordNotFound) {
 			return nil, errors.New("手机号不存在！")
 		}
+		log.Println(res.Error)
 		return nil, res.Error
 	}
 
@@ -87,6 +94,7 @@ func isPKExist(id uint64) error {
 		Scan(&exists).Error
 
 	if err != nil {
+		log.Println(err)
 		return err
 	}
 
@@ -101,6 +109,7 @@ func isPKExist(id uint64) error {
 func Register(user *model.User) error {
 	pwd, err := secure.HashString(user.Password)
 	if err != nil {
+		log.Println(err)
 		return err
 	}
 
@@ -113,10 +122,12 @@ func Register(user *model.User) error {
 func LoginByUid(uid string, password string) (*model.LoginResp, error) {
 	user, err := getUserByUid(uid)
 	if err != nil {
+		log.Println(err)
 		return nil, errors.New("登陆失败 微信号或密码错误")
 	}
 
-	if ok := secure.VerifyPassword(user.Password, password); ok != nil {
+	if err := secure.VerifyPassword(user.Password, password); err != nil {
+		log.Println(err)
 		return nil, errors.New("登陆失败 微信号或密码错误")
 	}
 
@@ -127,10 +138,12 @@ func LoginByUid(uid string, password string) (*model.LoginResp, error) {
 func LoginByPhone(phone string, password string) (*model.LoginResp, error) {
 	user, err := getUserByPhone(phone)
 	if err != nil {
+		log.Println(err)
 		return nil, errors.New("登陆失败 手机号或密码错误")
 	}
 
-	if ok := secure.VerifyPassword(user.Password, password); ok != nil {
+	if err := secure.VerifyPassword(user.Password, password); err != nil {
+		log.Println(err)
 		return nil, errors.New("登陆失败 手机号或密码错误")
 	}
 

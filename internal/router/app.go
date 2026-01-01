@@ -22,6 +22,13 @@ func Launch() *gin.Engine {
 		{
 			auth.PATCH("/me/uid", handler.ReviseUid) //修改微信号
 
+			info := auth.Group("/info")
+			{
+				info.GET("/friends/:id", handler.FriendInfo)     // 查看好友信息
+				info.GET("/strangers/:id", handler.StrangerInfo) // 查看陌生人信息
+				info.GET("/recent", handler.RecentVisit)         //查看最近访问的人
+			}
+
 			converse := auth.Group("/conversations")
 			{
 				converse.GET("")                  //加载聊天列表

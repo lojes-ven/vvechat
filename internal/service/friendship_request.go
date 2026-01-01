@@ -1,6 +1,7 @@
 package service
 
 import (
+	"log"
 	"vvechat/internal/model"
 	"vvechat/pkg/infra"
 
@@ -14,6 +15,7 @@ func SendFriendRequest(senderID, receiverID uint64, msg string, senderName strin
 		return gorm.ErrInvalidData
 	}
 	if err := isPKExist(receiverID); err != nil {
+		log.Println(err)
 		return err
 	}
 
@@ -33,6 +35,7 @@ func FriendRequestList(receiverID uint64) ([]model.FriendRequestListResp, error)
 		Order("created_at DESC").
 		Find(&respSlice)
 	if res.Error != nil {
+		log.Println(res.Error)
 		return nil, res.Error
 	}
 
@@ -50,17 +53,20 @@ func FriendRequestAccept(id uint64) error {
 			Where("id = ? AND status = ?", id, "pending").
 			First(&req).
 			Error; err != nil {
+			log.Println(err)
 			return err
 		}
 
 		if err := tx.Model(&req).
 			Update("status", "accepted").
 			Error; err != nil {
+			log.Println(err)
 			return err
 		}
 
 		err := createFriendship(tx, req.SenderID, req.ReceiverID)
 		if err != nil {
+			log.Println(err)
 			return err
 		}
 

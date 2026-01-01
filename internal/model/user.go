@@ -28,16 +28,15 @@ func NewUser(name string, password string, phone string) (*User, error) {
 		PhoneNumber: phone,
 	}
 
-	id, err := utils.NewUniqueID()
-	if err != nil {
-		return nil, err
-	}
-
-	user.ID = id
-	user.Uid = "V_" + strconv.FormatUint(id, 36)
 	return &user, nil
 }
 
 func (*User) TableName() string {
 	return "users"
+}
+
+func (u *User) BeforeCreate(db *gorm.DB) error {
+	u.ID = utils.NewUniqueID()
+	u.Uid = "V_" + strconv.FormatUint(u.ID, 36)
+	return nil
 }
