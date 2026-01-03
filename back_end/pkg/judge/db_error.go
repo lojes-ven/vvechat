@@ -14,6 +14,9 @@ func IsNotFound(err error) bool {
 
 // IsUniqueConflict 判断是否是“唯一约束冲突” 若为真则说明冲突
 func IsUniqueConflict(err error) bool {
+	if errors.Is(err, gorm.ErrDuplicatedKey) {
+		return true
+	}
 	var pgErr *pgconn.PgError
 	if errors.As(err, &pgErr) {
 		return pgErr.Code == "23505"

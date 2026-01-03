@@ -19,6 +19,16 @@ func SendFriendRequest(senderID, receiverID uint64, msg string, senderName strin
 		return err
 	}
 
+	var count int64
+	infra.GetDB().
+		Model(&model.Friendship{}).
+		Where("(user_id = ? AND friend_id = ?) OR (user_id = ? AND friend_id = ?)",
+			senderID, receiverID, receiverID, senderID).
+		Count(&count)
+	if count > 0 {
+		return gorm.ErrDuplicatedKey
+	}
+
 	return infra.GetDB().
 		Model(&model.FriendshipRequest{}).
 		Create(model.NewFriendshipRequest(senderID, receiverID, msg, senderName)).
