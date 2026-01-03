@@ -10,10 +10,10 @@ type UserInfoResp struct {
 
 // FriendInfoResp 好友信息返回体
 type FriendInfoResp struct {
-	ID     uint64 `json:"id"`
-	Remark string `json:"remark"`
-	Name   string `json:"name"`
-	Uid    string `json:"uid"`
+	ID           uint64 `json:"id"`
+	FriendRemark string `json:"friend_remark"`
+	Name         string `json:"name"`
+	Uid          string `json:"uid"`
 }
 
 // StrangerInfoResp 陌生人信息返回体

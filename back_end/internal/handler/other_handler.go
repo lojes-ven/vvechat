@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"strconv"
 	"vvechat/internal/model"
 	"vvechat/internal/service"
 	"vvechat/pkg/judge"
@@ -9,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// RefreshToken 刷新Token
 func RefreshToken(c *gin.Context) {
 	id := c.GetUint64("id")
 
@@ -21,6 +23,7 @@ func RefreshToken(c *gin.Context) {
 	response.Success(c, 201, "success", resp)
 }
 
+// ReviseUid 修改微信号
 func ReviseUid(c *gin.Context) {
 	id := c.GetUint64("id")
 
@@ -44,10 +47,46 @@ func ReviseUid(c *gin.Context) {
 	response.Success(c, 201, "success", nil)
 }
 
+// FriendInfo 查看好友信息
 func FriendInfo(c *gin.Context) {
+	userID := c.GetUint64("id")
+	id := c.Param("id")
+	friendID, err := strconv.ParseUint(id, 10, 64)
+	if err != nil {
+		response.Fail(c, 400, "好友 ID 错误")
+		return
+	}
 
+	resp, err := service.FriendInfo(userID, friendID)
+	if err != nil {
+		if judge.IsUniqueConflict(err) {
+			response.Fail(c, 400, "找不到好友")
+		} else {
+			response.Fail(c, 500, "服务器错误")
+		}
+		return
+	}
+	response.Success(c, 200, "success", resp)
 }
 
+// StrangerInfo 查看陌生人信息
 func StrangerInfo(c *gin.Context) {
+	userID := c.GetUint64("id")
+	id := c.Param("id")
+	strangerID, err := strconv.ParseUint(id, 10, 64)
+	if err != nil {
+		response.Fail(c, 400, "陌生人 ID 错误")
+		return
+	}
 
+	resp, err := service.StrangerInfo(userID, strangerID)
+	if err != nil {
+		if judge.IsUniqueConflict(err) {
+			response.Fail(c, 400, "找不到此人")
+		} else {
+			response.Fail(c, 500, "服务器错误")
+		}
+		return
+	}
+	response.Success(c, 200, "success", resp)
 }

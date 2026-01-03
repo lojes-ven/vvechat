@@ -15,7 +15,7 @@ Authorization: Bearer <token>
     "message":
     "data": {
     	"id":表主键,
-    	"remark":备注，
+    	"friend_remark":备注，
     	"name":昵称,
     	"uid":微信号
 	}

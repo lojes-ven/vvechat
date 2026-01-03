@@ -58,6 +58,5 @@ func Launch() *gin.Engine {
 			}
 		}
 	}
-
 	return r
 }
