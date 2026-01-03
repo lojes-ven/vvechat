@@ -10,7 +10,7 @@ type UserInfoResp struct {
 
 // FriendInfoResp 好友信息返回体
 type FriendInfoResp struct {
-	ID           uint64 `json:"id"`
+	ID           uint64 `json:"id,string"`
 	FriendRemark string `json:"friend_remark"`
 	Name         string `json:"name"`
 	Uid          string `json:"uid"`
@@ -18,13 +18,7 @@ type FriendInfoResp struct {
 
 // StrangerInfoResp 陌生人信息返回体
 type StrangerInfoResp struct {
-	ID   uint64 `json:"id"`
-	Name string `json:"name"`
-}
-
-// RecentVisitResp 最近访问的人返回体
-type RecentVisitResp struct {
-	ID   uint64 `json:"id"`
+	ID   uint64 `json:"id,string"`
 	Name string `json:"name"`
 }
 
@@ -43,8 +37,8 @@ type LoginResp struct {
 
 // FriendRequestListResp 好友申请列表返回体
 type FriendRequestListResp struct {
-	RequestID           uint64    `gorm:"column:id" json:"request_id"`
-	SenderID            uint64    `json:"sender_id"`
+	RequestID           uint64    `gorm:"column:id" json:"request_id,string"`
+	SenderID            uint64    `json:"sender_id,string"`
 	SenderName          string    `json:"sender_name"`
 	VerificationMessage string    `json:"verification_message"`
 	Status              string    `json:"status"`
@@ -53,7 +47,7 @@ type FriendRequestListResp struct {
 
 // FriendshipListResp 好友列表返回体
 type FriendshipListResp struct {
-	FriendshipID uint64 `gorm:"column:id" json:"friendship_id"` // friend_ships 表的主键
+	FriendshipID uint64 `gorm:"column:id" json:"friendship_id,string"` // friend_ships 表的主键
 	FriendRemark string `json:"friend_remark"`
-	FriendID     uint64 `json:"friend_id"`
+	FriendID     uint64 `json:"friend_id,string"`
 }

@@ -45,16 +45,17 @@
   }
   ```
 
-- **私发消息**
+- **发送消息**
 
   前端接口
 
   ```http
-  POST api/auth/messages
-  json
+  POST /api/auth/messages
+  Content-Type: application/json
+
   {
-  	"conversation_id": 给哪个会话发
-  	"content": 消息内容
+  	"receiver_id": "接收者ID",
+  	"content": "消息内容"
   }
   Authorization: Bearer <token>
   ```
@@ -64,8 +65,8 @@
   ```json
   {
       "code":  200,
-      "message": 信息,
-      "data": message_id（信息表的主键）
+      "message": "success",
+      "data": "消息ID"
   }
   ```
 
@@ -73,8 +74,8 @@
 
   ```json
   {
-      "code":  400 / 401 / 500 / 409,
-      "message": 信息
+      "code":  400,
+      "message": "错误信息"
   }
   ```
 
@@ -83,9 +84,11 @@
   前端接口
 
   ```http
-  DELETE api/auth/message/recall
+  DELETE /api/auth/messages/recall
+  Content-Type: application/json
+
   {
-  	"message_id":消息表的主键
+  	"message_id": "消息ID"
   }
   Authorization: Bearer <token>
   ```
@@ -95,7 +98,7 @@
   ```json
   {
       "code":  200,
-      "message": 信息,
+      "message": "success"
   }
   ```
 
@@ -103,17 +106,21 @@
 
   ```json
   {
-      "code":  400 / 401 / 500 / 409,
-      "message": 信息
+      "code":  400,
+      "message": "错误信息"
   }
   ```
 
 - **删除消息**
 
+  前端接口
+
   ```http
-  DELETE api/auth/message/delete
+  DELETE /api/auth/messages/delete
+  Content-Type: application/json
+
   {
-  	"message_id":消息表的主键
+  	"message_id": "消息ID"
   }
   Authorization: Bearer <token>
   ```
@@ -123,7 +130,7 @@
   ```json
   {
       "code":  200,
-      "message": 信息,
+      "message": "success"
   }
   ```
 
@@ -131,8 +138,8 @@
 
   ```json
   {
-      "code":  400 / 401 / 500 / 409,
-      "message": 信息
+      "code":  400,
+      "message": "错误信息"
   }
   ```
 

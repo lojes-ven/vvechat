@@ -47,8 +47,8 @@ func ReviseUid(c *gin.Context) {
 	response.Success(c, 201, "success", nil)
 }
 
-// FriendInfo 查看好友信息
-func FriendInfo(c *gin.Context) {
+// FriendInfoByID 查看好友信息
+func FriendInfoByID(c *gin.Context) {
 	userID := c.GetUint64("id")
 	id := c.Param("id")
 	friendID, err := strconv.ParseUint(id, 10, 64)
@@ -57,7 +57,7 @@ func FriendInfo(c *gin.Context) {
 		return
 	}
 
-	resp, err := service.FriendInfo(userID, friendID)
+	resp, err := service.FriendInfoByID(userID, friendID)
 	if err != nil {
 		if judge.IsUniqueConflict(err) {
 			response.Fail(c, 400, "找不到好友")
@@ -69,9 +69,8 @@ func FriendInfo(c *gin.Context) {
 	response.Success(c, 200, "success", resp)
 }
 
-// StrangerInfo 查看陌生人信息
-func StrangerInfo(c *gin.Context) {
-	userID := c.GetUint64("id")
+// StrangerInfoByID 查看陌生人信息
+func StrangerInfoByID(c *gin.Context) {
 	id := c.Param("id")
 	strangerID, err := strconv.ParseUint(id, 10, 64)
 	if err != nil {
@@ -79,7 +78,48 @@ func StrangerInfo(c *gin.Context) {
 		return
 	}
 
-	resp, err := service.StrangerInfo(userID, strangerID)
+	resp, err := service.StrangerInfoByID(strangerID)
+	if err != nil {
+		if judge.IsUniqueConflict(err) {
+			response.Fail(c, 400, "找不到此人")
+		} else {
+			response.Fail(c, 500, "服务器错误")
+		}
+		return
+	}
+	response.Success(c, 200, "success", resp)
+}
+
+// FriendInfoByUid 查看好友信息 通过Uid
+func FriendInfoByUid(c *gin.Context) {
+	userID := c.GetUint64("id")
+	uid := c.Param("uid")
+	if uid == "" {
+		response.Fail(c, 400, "Uid 不能为空")
+		return
+	}
+
+	resp, err := service.FriendInfoByUid(userID, uid)
+	if err != nil {
+		if judge.IsUniqueConflict(err) {
+			response.Fail(c, 400, "找不到好友")
+		} else {
+			response.Fail(c, 500, "服务器错误")
+		}
+		return
+	}
+	response.Success(c, 200, "success", resp)
+}
+
+// StrangerInfoByUid 查看陌生人信息通过Uid
+func StrangerInfoByUid(c *gin.Context) {
+	uid := c.Param("uid")
+	if uid == "" {
+		response.Fail(c, 400, "Uid 不能为空")
+		return
+	}
+
+	resp, err := service.StrangerInfoByUid(uid)
 	if err != nil {
 		if judge.IsUniqueConflict(err) {
 			response.Fail(c, 400, "找不到此人")

@@ -10,6 +10,17 @@ import (
 func Launch() *gin.Engine {
 	r := gin.Default()
 
+	r.Use(func(c *gin.Context) {
+		c.Header("Access-Control-Allow-Origin", "*")                            // 允许所有域名访问
+		c.Header("Access-Control-Allow-Methods", "GET, POST, DELETE")           // 允许的HTTP方法
+		c.Header("Access-Control-Allow-Headers", "Content-Type, Authorization") // 允许的请求头
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(204) // 对于预检请求，直接返回成功
+			return
+		}
+		c.Next()
+	})
+
 	api := r.Group("/api")
 	{
 		api.POST("/register", handler.Register)               // 注册
@@ -27,8 +38,10 @@ func Launch() *gin.Engine {
 
 			info := auth.Group("/info")
 			{
-				info.GET("/friends/:id", handler.FriendInfo)     // 查看好友信息
-				info.GET("/strangers/:id", handler.StrangerInfo) // 查看陌生人信息
+				info.GET("/friends/id/:id", handler.FriendInfoByID)        // 根据ID 查看好友信息
+				info.GET("/strangers/id/:id", handler.StrangerInfoByID)    // 根据ID 查看陌生人信息
+				info.GET("/friends/uid/:uid", handler.FriendInfoByUid)     // 根据Uid 查看好友信息
+				info.GET("/strangers/uid/:uid", handler.StrangerInfoByUid) // 根据Uid 查看陌生人信息
 			}
 
 			converse := auth.Group("/conversations")

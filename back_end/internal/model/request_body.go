@@ -26,7 +26,7 @@ type ReviseUidReq struct {
 
 // AddFriendReq 添加好友请求体
 type AddFriendReq struct {
-	ReceiverID          uint64 `json:"receiver_id" binding:"required,gt=0"`
+	ReceiverID          uint64 `json:"receiver_id,string" binding:"required,gt=0"`
 	SenderName          string `json:"sender_name" binding:"required,max=64"`
 	VerificationMessage string `json:"verification_message" binding:"omitempty,max=128"`
 }
@@ -38,11 +38,11 @@ type FriendRequestActionReq struct {
 
 // SendMessageReq 发送消息请求体
 type SendMessageReq struct {
-	ReceiverID uint64 `json:"receiver_id" binding:"required,gt=0"`
+	ReceiverID uint64 `json:"receiver_id,string" binding:"required,gt=0"`
 	Content    string `json:"content" binding:"required,max=1024"`
 }
 
 // MessageIDReq 消息ID请求体
 type MessageIDReq struct {
-	MessageID uint64 `json:"message_id" binding:"required,gt=0"`
+	MessageID uint64 `json:"message_id,string" binding:"required,gt=0"`
 }

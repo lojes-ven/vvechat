@@ -12,12 +12,12 @@
   ```json
   {
       "code":  200,
-      "message": 信息,
+      "message": "success",
       "data":[
       	{
-              "friendship_id":表主键,
-           	"friend_name":好友昵称,
-              "friend_id":好友主键，
+              "friendship_id":"表主键",
+           	"friend_remark": "好友备注",
+              "friend_id":"好友主键",
           },
   		{……}
       ]
@@ -28,8 +28,8 @@
 
   ```json
   {
-      "code":  400 / 401 / 500 / 409,
-      "message": 信息
+      "code":  500,
+      "message": "服务器错误"
   }
   ```
 
@@ -38,7 +38,7 @@
   前端接口：
 
   ```http
-  GET api/auth/friendship_requests
+  GET /api/auth/friendship_requests
   Authorization: Bearer <token>
   ```
 
@@ -50,8 +50,8 @@
       "message": 信息,
       "data":[
       	{
-              "request_id":表主键,
-           	"sender_id":主键,
+              "request_id":"表主键",
+           	"sender_id":"主键",
            	"sender_name":昵称,
            	"verification_message":验证消息,
            	"status":状态,
@@ -76,12 +76,13 @@
   前端接口：
 
   ```http
-  POST api/auth/friendship_requests
-  json
+  POST /api/auth/friendship_requests
+  Content-Type: application/json
+
   {
-  	"sender_name": 发送者的昵称,
-  	"receiver_id": 谁收到这个好友申请,
-  	"verification_message": 发送者写的验证消息
+  	"sender_name": "发送者的昵称",
+  	"receiver_id": "接收者ID",
+  	"verification_message": "发送者写的验证消息"
   }
   Authorization: Bearer <token>
   ```
@@ -90,8 +91,8 @@
 
   ```json
   {
-      "code":  200,
-      "message": 信息
+      "code":  201,
+      "message": "发送成功"
   }
   ```
 
@@ -99,8 +100,8 @@
 
   ```json
   {
-      "code":  400 / 401 / 500 / 409,
-      "message": 信息
+      "code":  400,
+      "message": "发送失败"
   }
   ```
 
@@ -109,11 +110,11 @@
   前端接口
 
   ```http
-  # 同意
-  POST api/auth/friendship_requests/{request_id}
-  json
+  POST /api/auth/friendship_requests/{request_id}
+  Content-Type: application/json
+
   {
-  	"status": "accepted" | "rejected"  #同意还是拒绝
+  	"status": "accepted" | "rejected"
   }
   Authorization: Bearer <token>
   ```
@@ -123,7 +124,7 @@
   ```json
   {
       "code":  201,
-      "message": 信息
+      "message": "success"
   }
   ```
 
@@ -131,8 +132,8 @@
 
   ```json
   {
-      "code":  400 / 401 / 500 / 409,
-      "message": 信息
+      "code":  500,
+      "message": "服务器错误"
   }
   ```
 
@@ -141,7 +142,7 @@
   前端接口
 
   ```http
-  DELETE api/auth/friendships/{friend_id #对方的id}
+  DELETE /api/auth/friendships/{friend_id}
   Authorization: Bearer <token>
   ```
 
@@ -150,7 +151,7 @@
   ```json
   {
       "code":  201,
-      "message": 信息
+      "message": "success"
   }
   ```
 
@@ -158,8 +159,8 @@
 
   ```json
   {
-      "code":  400 / 401 / 500 / 409,
-      "message": 信息
+      "code":  400,
+      "message": "好友不存在"
   }
   ```
 
