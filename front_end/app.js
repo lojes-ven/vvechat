@@ -14,6 +14,10 @@ const state = {
     isViewingStranger: false
 };
 
+// 初始化全局缓存 (容量 20)
+// 键: uid (微信号), 值: id (用户ID)
+const userCache = new LRUCache(20);
+
 // API 基础路径
 const API_BASE = 'http://localhost:8080/api';
 
@@ -395,15 +399,19 @@ function openChat(conv) {
 
 // 处理头像点击
 window.handleAvatarClick = function(convId) {
+    console.log('Avatar clicked:', convId);
     // 简单处理：如果是好友会话，尝试跳转到好友详情
     // convId 格式: conv_{friend_id}
-    if (convId.startsWith('conv_')) {
+    if (convId && convId.startsWith('conv_')) {
         const friendId = convId.split('_')[1];
-        // 检查是否是好友
-        const isFriend = state.friends.some(f => f.friend_id == friendId);
+        // 检查是否是好友 (注意类型转换，friend_id 可能是字符串)
+        const isFriend = state.friends.some(f => String(f.friend_id) === String(friendId));
+        
         if (isFriend) {
             switchTab('contacts');
             openContact(friendId, false);
+        } else {
+            console.log('Not a friend or friend not found in list');
         }
     }
 };
@@ -425,6 +433,11 @@ async function openContact(id, isStranger) {
             info = await apiCall(`/auth/info/strangers/id/${id}`, 'GET');
         } else {
             info = await apiCall(`/auth/info/friends/id/${id}`, 'GET');
+        }
+        
+        // 更新缓存 (如果返回信息中有 uid)
+        if (info && info.uid && info.id) {
+            userCache.put(info.uid, info.id);
         }
         
         state.currentContactInfo = info;
@@ -538,12 +551,27 @@ async function handleDeleteFriend() {
     els.contactOptionsMenu.classList.add('hidden');
     if (!confirm('确定要删除该好友吗？')) return;
     
-    const friendId = state.currentContactInfo.friend_id; 
+    // 修复 Bug: 使用 state.activeContactId 作为 friend_id
+    // state.activeContactId 是从侧边栏点击时传入的 friend.friend_id，这是最可靠的来源
+    const friendId = state.activeContactId;
+    
+    if (!friendId) {
+        alert('无法获取好友ID，请刷新重试');
+        return;
+    }
     
     try {
         await apiCall(`/auth/friendships/${friendId}`, 'DELETE');
         alert('删除成功');
         
+        // 从缓存中移除 (如果存在)
+        // 注意：我们现在缓存的是 uid -> id，无法直接通过 id 移除
+        // 除非我们遍历缓存或者维护反向映射。
+        // 鉴于"不用保证与数据库强一致"的要求，这里可以忽略，或者仅当我们知道 uid 时移除
+        if (state.currentContactInfo && state.currentContactInfo.uid) {
+            userCache.remove(state.currentContactInfo.uid);
+        }
+
         // 更新本地列表
         state.friends = state.friends.filter(f => f.friend_id != friendId);
         state.activeContactId = null;
@@ -643,12 +671,33 @@ async function searchStranger(uid) {
     els.searchInput.value = '';
     
     try {
-        // 搜索陌生人信息
-        const info = await apiCall(`/auth/info/strangers/uid/${uid}`, 'GET');
+        let info;
+        // 1. 查缓存 (LRU: uid -> id)
+        const cachedId = userCache.get(uid);
+        
+        if (cachedId) {
+            console.log('LRU Cache Hit for UID:', uid, '-> ID:', cachedId);
+            // 缓存命中：直接使用 ID 获取最新信息 (避免使用可能过期的缓存信息)
+            // 满足需求：通过微信号以 O(1) 获得 id，然后获取实时数据
+            info = await apiCall(`/auth/info/strangers/id/${cachedId}`, 'GET');
+        } else {
+            console.log('LRU Cache Miss for UID:', uid);
+            // 缓存未命中：使用 UID 搜索
+            info = await apiCall(`/auth/info/strangers/uid/${uid}`, 'GET');
+        }
+
+        // 2. 更新缓存 (uid -> id)
+        if (info && info.id) {
+            // 注意：如果 info 中没有 uid，我们使用搜索时的 uid
+            // 后端 StrangerInfoResp 可能不返回 uid，但我们知道它就是当前的 uid
+            userCache.put(uid, info.id);
+        }
+
         // 成功找到
         state.currentContactInfo = info;
         renderContactView(info, true); // true = stranger
     } catch (err) {
+        console.error(err);
         alert('未找到该用户');
     }
 }
