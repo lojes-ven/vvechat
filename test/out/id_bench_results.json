@@ -1,0 +1,19 @@
+{
+  "config": {
+    "backend": "process",
+    "nodes": 8,
+    "workers_per_node": 1,
+    "duration": 30,
+    "target_qps": 100000,
+    "mode": "mutex",
+    "report_interval": 1
+  },
+  "total_generated": 3000008,
+  "verification": {
+    "valid": true,
+    "count": 3000008,
+    "unique_count": 3000008,
+    "errors": []
+  },
+  "avg_qps": 100000.26666666666
+}

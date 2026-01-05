@@ -184,6 +184,18 @@ class LRUCache {
         this.map = new HashTable(53);
         this.list = new DoublyLinkedList(); // 双向链表
         this.size = 0;
+        // 因容量限制触发的淘汰次数（仅统计 eviction，不统计 remove）
+        this._evictionCount = 0;
+    }
+
+    // 只读属性：允许 cache.evictionCount 读取，但禁止外部写入
+    get evictionCount() {
+        return this._evictionCount;
+    }
+
+    // 只读方法：对外提供稳定接口，便于以后扩展统计逻辑
+    getEvictionCount() {
+        return this._evictionCount;
     }
 
     /**
@@ -226,6 +238,7 @@ class LRUCache {
                 if (tail) {
                     this.map.delete(tail.key);
                     this.size--;
+                    this._evictionCount++;
                 }
             }
         }
@@ -246,3 +259,7 @@ class LRUCache {
         }
     }
 }
+
+module.exports = { LRUCache };
+
+module.exports = { LRUCache };
