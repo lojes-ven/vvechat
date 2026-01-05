@@ -62,14 +62,126 @@ class DoublyLinkedList {
 }
 
 /**
+ * 手写哈希表（数组桶 + 链地址法）
+ * - key 统一转为 string
+ * - 手写哈希函数：FNV-1a 32-bit
+ */
+class HashTableEntry {
+    constructor(key, value, next = null) {
+        this.key = key;
+        this.value = value;
+        this.next = next;
+    }
+}
+
+class HashTable {
+    constructor(bucketCount = 53) {
+        this.bucketCount = bucketCount;
+        this.buckets = new Array(bucketCount).fill(null);
+        this.size = 0;
+    }
+
+    _toKey(key) {
+        return String(key);
+    }
+
+    // FNV-1a 32-bit
+    _hash(keyStr) {
+        let hash = 0x811c9dc5;
+        for (let i = 0; i < keyStr.length; i++) {
+            hash ^= keyStr.charCodeAt(i);
+            hash = (hash * 0x01000193) >>> 0;
+        }
+        return hash;
+    }
+
+    _index(keyStr) {
+        return this._hash(keyStr) % this.bucketCount;
+    }
+
+    has(key) {
+        return this.get(key) !== undefined;
+    }
+
+    get(key) {
+        const keyStr = this._toKey(key);
+        const idx = this._index(keyStr);
+        let cur = this.buckets[idx];
+        while (cur) {
+            if (cur.key === keyStr) return cur.value;
+            cur = cur.next;
+        }
+        return undefined;
+    }
+
+    set(key, value) {
+        const keyStr = this._toKey(key);
+        const idx = this._index(keyStr);
+        let cur = this.buckets[idx];
+        while (cur) {
+            if (cur.key === keyStr) {
+                cur.value = value;
+                return;
+            }
+            cur = cur.next;
+        }
+
+        const entry = new HashTableEntry(keyStr, value, this.buckets[idx]);
+        this.buckets[idx] = entry;
+        this.size++;
+
+        if (this.size / this.bucketCount > 0.75) {
+            this._rehash(this._nextBucketCount(this.bucketCount));
+        }
+    }
+
+    delete(key) {
+        const keyStr = this._toKey(key);
+        const idx = this._index(keyStr);
+        let cur = this.buckets[idx];
+        let prev = null;
+        while (cur) {
+            if (cur.key === keyStr) {
+                if (prev) prev.next = cur.next;
+                else this.buckets[idx] = cur.next;
+                this.size--;
+                return true;
+            }
+            prev = cur;
+            cur = cur.next;
+        }
+        return false;
+    }
+
+    _rehash(newBucketCount) {
+        const oldBuckets = this.buckets;
+        this.bucketCount = newBucketCount;
+        this.buckets = new Array(newBucketCount).fill(null);
+        this.size = 0;
+
+        for (const head of oldBuckets) {
+            let cur = head;
+            while (cur) {
+                this.set(cur.key, cur.value);
+                cur = cur.next;
+            }
+        }
+    }
+
+    _nextBucketCount(current) {
+        // 简单扩容策略：翻倍后再 +1，保证是奇数，减少某些模式碰撞
+        return current * 2 + 1;
+    }
+}
+
+/**
  * LRU 缓存类
  */
 class LRUCache {
     constructor(capacity) {
         this.capacity = Number.isFinite(capacity) ? capacity : 0;
-        // 哈希表: uid -> Node
-        // 使用 Map 避免对象原型链键冲突，更符合“哈希表”语义
-        this.map = new Map();
+        // 手写哈希表: uid -> Node
+        this.map = new HashTable(53);
         this.list = new DoublyLinkedList(); // 双向链表
         this.size = 0;
     }
@@ -80,8 +192,8 @@ class LRUCache {
      * @returns {string|number|null} - 用户 ID
      */
     get(key) {
-        if (this.map.has(key)) {
-            const node = this.map.get(key);
+        const node = this.map.get(key);
+        if (node !== undefined) {
             this.list.moveToHead(node); // 访问后移动到头部，标记为最近使用
             return node.value;
         }
@@ -96,11 +208,11 @@ class LRUCache {
     put(key, value) {
         if (this.capacity <= 0) return;
 
-        if (this.map.has(key)) {
+        const existNode = this.map.get(key);
+        if (existNode !== undefined) {
             // 如果已存在，更新值并移动到头部
-            const node = this.map.get(key);
-            node.value = value;
-            this.list.moveToHead(node);
+            existNode.value = value;
+            this.list.moveToHead(existNode);
         } else {
             // 如果不存在，创建新节点
             const newNode = new Node(key, value);
@@ -126,8 +238,8 @@ class LRUCache {
      * @param {string} key 
      */
     remove(key) {
-        if (this.map.has(key)) {
-            const node = this.map.get(key);
+        const node = this.map.get(key);
+        if (node !== undefined) {
             this.list.removeNode(node);
             this.map.delete(key);
             this.size--;
