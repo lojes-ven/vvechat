@@ -260,6 +260,12 @@ class LRUCache {
     }
 }
 
-module.exports = { LRUCache };
+// 浏览器直接通过 <script> 引入时，LRUCache 会作为全局变量使用。
+// 同时兼容 Node.js 环境（如基准测试或单元测试）时的 require。
+if (typeof window !== 'undefined') {
+    window.LRUCache = LRUCache;
+}
 
-module.exports = { LRUCache };
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = { LRUCache };
+}
