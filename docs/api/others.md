@@ -156,6 +156,53 @@ Content-Type: application/json
 }
 ```
 
+**修改昵称**
+
+前端接口：
+
+```http
+POST /api/auth/me/name
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+    "new_name": "新昵称"
+}
+```
+
+成功后端返回：
+
+```json
+{
+    "code": 200, // 或201，视具体实现而定，通常成功即可
+    "message": "success"
+}
+```
+
+**修改密码**
+
+前端接口：
+
+```http
+POST /api/auth/me/password
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+    "prev_password": "旧密码",
+    "new_password": "新密码"
+}
+```
+
+成功后端返回：
+
+```json
+{
+    "code": 200,
+    "message": "success"
+}
+```
+
 **查看好友信息**
 
 前端接口：
