@@ -52,3 +52,7 @@ type SendMessageReq struct {
 type MessageIDReq struct {
 	MessageID uint64 `json:"message_id,string" binding:"required,gt=0"`
 }
+
+type ReviseRemarkReq struct {
+	Remark string `json:"remark" binding:"required,max=64"`
+}
