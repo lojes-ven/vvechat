@@ -188,6 +188,39 @@
   }
   ```
 
+- **修改好友备注**
+
+  修改好友备注接口：
+
+  ```http
+  POST api/auth/friendships/remark/:friend_id
+  Authorization: Bearer <token>
+  Content-Type: application/json
+
+  {
+      "remark": "虽然但是"
+  }
+  ```
+
+  成功后端返回：
+
+  ```json
+  {
+      "code": 201,
+      "message": "success",
+      "data": null
+  }
+  ```
+
+  失败后端返回：
+
+  ```json
+  {
+      "code": 400,
+      "message": "修改失败"
+  }
+  ```
+
   
 
 

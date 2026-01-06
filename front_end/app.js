@@ -100,6 +100,12 @@ const els = {
     settingConfirmPass: document.getElementById('setting-confirm-pass'),
     btnCancelSetting: document.getElementById('btn-cancel-setting'),
     btnSaveSetting: document.getElementById('btn-save-setting'),
+
+    // 修改备注
+    modalRemark: document.getElementById('modal-remark'),
+    remarkInput: document.getElementById('remark-input'),
+    btnCancelRemark: document.getElementById('btn-cancel-remark'),
+    btnSaveRemark: document.getElementById('btn-save-remark'),
 };
 
 // --- 初始化 ---
@@ -187,8 +193,11 @@ function bindEvents() {
     });
     
     els.btnEditRemark.addEventListener('click', () => {
-        alert('修改备注功能暂未开放');
         els.contactOptionsMenu.classList.add('hidden');
+        // Pre-fill current remark if available
+        const currentRemark = state.currentContactInfo ? (state.currentContactInfo.friend_remark || '') : '';
+        els.remarkInput.value = currentRemark;
+        openModal('remark');
     });
     
     els.btnDeleteFriend.addEventListener('click', handleDeleteFriend);
@@ -206,9 +215,11 @@ function bindEvents() {
     // 模态框按钮
     els.btnCancelAdd.addEventListener('click', closeModal);
     els.btnCancelSetting.addEventListener('click', closeModal);
+    els.btnCancelRemark.addEventListener('click', closeModal);
     
     els.btnConfirmAdd.addEventListener('click', handleSendFriendRequest);
     els.btnSaveSetting.addEventListener('click', handleSaveSettings);
+    els.btnSaveRemark.addEventListener('click', handleSaveRemark);
 }
 
 // --- 业务逻辑 ---
@@ -801,6 +812,38 @@ async function handleSaveSettings() {
     }
 }
 
+// 15. 修改好友备注
+async function handleSaveRemark() {
+    const friendId = state.currentContactInfo ? state.currentContactInfo.friend_id : null;
+    const newRemark = els.remarkInput.value.trim();
+    
+    if (!friendId) return;
+
+    try {
+        await apiCall(`/auth/friendships/remark/${friendId}`, 'POST', { remark: newRemark });
+        
+        // 更新本地数据
+        const friend = state.friends.find(f => f.friend_id == friendId);
+        if (friend) {
+            friend.friend_remark = newRemark;
+        }
+        
+        // 更新当前显示信息
+        if (state.currentContactInfo && state.currentContactInfo.friend_id == friendId) {
+            state.currentContactInfo.friend_remark = newRemark;
+            renderContactView(state.currentContactInfo, false);
+        }
+        
+        // 更新侧边栏
+        renderSidebarList();
+        
+        alert('备注修改成功');
+        closeModal();
+    } catch (err) {
+        alert('修改失败: ' + err.message);
+    }
+}
+
 // --- 工具函数 ---
 
 function showLogin() {
@@ -832,9 +875,11 @@ function openModal(type) {
     els.modalOverlay.classList.remove('hidden');
     els.modalAddFriend.classList.add('hidden');
     els.modalSettings.classList.add('hidden');
+    els.modalRemark.classList.add('hidden');
 
     if (type === 'add-friend') els.modalAddFriend.classList.remove('hidden');
     if (type === 'settings') els.modalSettings.classList.remove('hidden');
+    if (type === 'remark') els.modalRemark.classList.remove('hidden');
 }
 
 function closeModal() {
