@@ -18,7 +18,7 @@ def plot_lru(out_dir):
         print("No LRU results found.")
         return
 
-    # series_points: name -> list[(capacity, hit_rate, throughput)]
+    # series_points: name -> list[(capacity, hit_rate, hit_rate_std, throughput, throughput_std)]
     series_points = {}
 
     with open(csv_file, 'r') as f:
@@ -27,7 +27,9 @@ def plot_lru(out_dir):
             workload = row.get('workload', '').strip()
             capacity = int(row['capacity'])
             hit_rate = float(row['hit_rate'])
+            hit_rate_std = _parse_optional_float(row.get('hit_rate_std'))
             throughput = _parse_optional_float(row.get('throughput_ops_per_sec'))
+            throughput_std = _parse_optional_float(row.get('throughput_ops_per_sec_std'))
 
             if workload == 'uniform':
                 series_name = 'uniform'
@@ -37,7 +39,7 @@ def plot_lru(out_dir):
             else:
                 continue
 
-            series_points.setdefault(series_name, []).append((capacity, hit_rate, throughput))
+            series_points.setdefault(series_name, []).append((capacity, hit_rate, hit_rate_std, throughput, throughput_std))
 
     # Sort each series by capacity
     for name in list(series_points.keys()):
@@ -48,8 +50,13 @@ def plot_lru(out_dir):
     for name, points in series_points.items():
         xs = [p[0] for p in points]
         ys = [p[1] for p in points]
+        yerr = [p[2] for p in points]
+        use_err = all(v is not None for v in yerr) and any(v > 0 for v in yerr)
         label = 'Uniform' if name == 'uniform' else name.replace('zipf_s=', 'Zipf (s=') + (')' if name.startswith('zipf_s=') else '')
-        plt.plot(xs, ys, label=label, marker='o')
+        if use_err:
+            plt.errorbar(xs, ys, yerr=yerr, label=label, marker='o', capsize=3)
+        else:
+            plt.plot(xs, ys, label=label, marker='o')
 
     plt.xlabel('Cache Capacity')
     plt.ylabel('Hit Rate')
@@ -67,11 +74,16 @@ def plot_lru(out_dir):
     plotted_any = False
     for name, points in series_points.items():
         xs = [p[0] for p in points]
-        ys = [p[2] for p in points]
+        ys = [p[3] for p in points]
+        yerr = [p[4] for p in points]
         if any(v is None for v in ys):
             continue
+        use_err = all(v is not None for v in yerr) and any(v > 0 for v in yerr)
         label = 'Uniform' if name == 'uniform' else name.replace('zipf_s=', 'Zipf (s=') + (')' if name.startswith('zipf_s=') else '')
-        plt.plot(xs, ys, label=label, marker='o')
+        if use_err:
+            plt.errorbar(xs, ys, yerr=yerr, label=label, marker='o', capsize=3)
+        else:
+            plt.plot(xs, ys, label=label, marker='o')
         plotted_any = True
 
     if plotted_any:

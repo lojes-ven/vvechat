@@ -31,6 +31,7 @@ const keyspace = parseInt(args[2]) || 10000;
 const requests = parseInt(args[3]) || 20000;
 const zipf_s = parseFloat(args[4]) || 1.1;
 const seed = parseInt(args[5]) || 42;
+const warmupRequests = parseInt(args[6]) || 20000;
 
 // Simple PRNG (Mulberry32)
 function mulberry32(a) {
@@ -115,10 +116,27 @@ function run() {
         keyGen = () => Math.floor(rand() * keyspace);
     }
     
+    // Pre-generate key stream so the measured time mainly reflects cache operations.
+    // This also makes runs more comparable across different machines and loads.
+    const totalKeys = warmupRequests + requests;
+    const keys = new Array(totalKeys);
+    for (let i = 0; i < totalKeys; i++) {
+        keys[i] = keyGen();
+    }
+
+    // Warm-up (excluded from metrics): lets V8 JIT stabilize and fills cache.
+    for (let i = 0; i < warmupRequests; i++) {
+        const key = keys[i];
+        const val = cache.get(key);
+        if (val === -1 || val === undefined || val === null) {
+            cache.put(key, key);
+        }
+    }
+
+    // Measured phase
     const start = process.hrtime.bigint();
-    
-    for (let i = 0; i < requests; i++) {
-        const key = keyGen();
+    for (let i = warmupRequests; i < totalKeys; i++) {
+        const key = keys[i];
         const val = cache.get(key);
         if (val !== -1 && val !== undefined && val !== null) {
             hits++;
@@ -127,7 +145,6 @@ function run() {
             cache.put(key, key); // Store key as value
         }
     }
-    
     const end = process.hrtime.bigint();
     const duration_ns = Number(end - start);
     const avg_latency_ns = duration_ns / requests;
@@ -137,6 +154,7 @@ function run() {
         workload,
         keyspace,
         requests,
+        warmup_requests: warmupRequests,
         zipf_s: workload === 'zipf' ? zipf_s : null,
         seed,
         hits,
