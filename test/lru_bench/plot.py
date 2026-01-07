@@ -3,43 +3,87 @@ import matplotlib.pyplot as plt
 import os
 import sys
 
+
+def _parse_optional_float(value):
+    if value is None:
+        return None
+    s = str(value).strip().lower()
+    if s in ("", "none", "null"):
+        return None
+    return float(value)
+
 def plot_lru(out_dir):
     csv_file = os.path.join(out_dir, "lru_bench_results.csv")
     if not os.path.exists(csv_file):
         print("No LRU results found.")
         return
-        
-    data = {'uniform': {'x': [], 'y': []}, 'zipf': {'x': [], 'y': []}}
-    
+
+    # series_points: name -> list[(capacity, hit_rate, throughput)]
+    series_points = {}
+
     with open(csv_file, 'r') as f:
         reader = csv.DictReader(f)
         for row in reader:
-            w = row['workload']
-            c = int(row['capacity'])
-            hr = float(row['hit_rate'])
-            
-            if w in data:
-                data[w]['x'].append(c)
-                data[w]['y'].append(hr)
-                
+            workload = row.get('workload', '').strip()
+            capacity = int(row['capacity'])
+            hit_rate = float(row['hit_rate'])
+            throughput = _parse_optional_float(row.get('throughput_ops_per_sec'))
+
+            if workload == 'uniform':
+                series_name = 'uniform'
+            elif workload == 'zipf':
+                s = _parse_optional_float(row.get('zipf_s'))
+                series_name = f'zipf_s={s}' if s is not None else 'zipf'
+            else:
+                continue
+
+            series_points.setdefault(series_name, []).append((capacity, hit_rate, throughput))
+
+    # Sort each series by capacity
+    for name in list(series_points.keys()):
+        series_points[name].sort(key=lambda t: t[0])
+
+    # ---- Hit rate plot ----
     plt.figure(figsize=(10, 6))
-    
-    if data['uniform']['x']:
-        plt.plot(data['uniform']['x'], data['uniform']['y'], label='Uniform', marker='o')
-        
-    if data['zipf']['x']:
-        plt.plot(data['zipf']['x'], data['zipf']['y'], label='Zipf (Hotspot)', marker='x')
-        
+    for name, points in series_points.items():
+        xs = [p[0] for p in points]
+        ys = [p[1] for p in points]
+        label = 'Uniform' if name == 'uniform' else name.replace('zipf_s=', 'Zipf (s=') + (')' if name.startswith('zipf_s=') else '')
+        plt.plot(xs, ys, label=label, marker='o')
+
     plt.xlabel('Cache Capacity')
     plt.ylabel('Hit Rate')
     plt.title('LRU Cache Hit Rate vs Capacity')
     plt.legend()
     plt.grid(True)
     plt.xscale('log')
-    
-    out_png = os.path.join(out_dir, "lru_bench_hitrate.png")
+
+    out_png = os.path.join(out_dir, 'lru_bench_hitrate.png')
     plt.savefig(out_png)
     print(f"Plot saved to {out_png}")
+
+    # ---- Throughput plot ----
+    plt.figure(figsize=(10, 6))
+    plotted_any = False
+    for name, points in series_points.items():
+        xs = [p[0] for p in points]
+        ys = [p[2] for p in points]
+        if any(v is None for v in ys):
+            continue
+        label = 'Uniform' if name == 'uniform' else name.replace('zipf_s=', 'Zipf (s=') + (')' if name.startswith('zipf_s=') else '')
+        plt.plot(xs, ys, label=label, marker='o')
+        plotted_any = True
+
+    if plotted_any:
+        plt.xlabel('Cache Capacity')
+        plt.ylabel('Throughput (ops/sec)')
+        plt.title('LRU Cache Throughput vs Capacity')
+        plt.legend()
+        plt.grid(True)
+        plt.xscale('log')
+        out_png = os.path.join(out_dir, 'lru_bench_throughput.png')
+        plt.savefig(out_png)
+        print(f"Plot saved to {out_png}")
 
 if __name__ == "__main__":
     out_dir = "d:/mmy/vvechat/test/out"

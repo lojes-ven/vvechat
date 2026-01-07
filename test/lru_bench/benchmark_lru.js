@@ -1,6 +1,27 @@
-const { LRUCache } = require('../../front_end/lru_cache.js');
-const fs = require('fs');
 const path = require('path');
+
+function loadLRUCache() {
+    const candidates = [
+        path.resolve(__dirname, '../../frontend/lru_cache.js'),
+        path.resolve(__dirname, '../../front_end/lru_cache.js'),
+    ];
+
+    for (const filePath of candidates) {
+        try {
+            // eslint-disable-next-line global-require, import/no-dynamic-require
+            const mod = require(filePath);
+            if (mod && mod.LRUCache) return mod.LRUCache;
+        } catch (_) {
+            // try next
+        }
+    }
+
+    throw new Error(
+        `Cannot load LRUCache. Tried: ${candidates.join(', ')}`
+    );
+}
+
+const LRUCache = loadLRUCache();
 
 // Parse args
 const args = process.argv.slice(2);
