@@ -192,7 +192,9 @@ function bindEvents() {
         els.contactOptionsMenu.classList.toggle('hidden');
     });
     
-    els.btnEditRemark.addEventListener('click', () => {
+    els.btnEditRemark.addEventListener('click', (e) => {
+        e.stopPropagation();
+        console.log('Modify Remark clicked');
         els.contactOptionsMenu.classList.add('hidden');
         // Pre-fill current remark if available
         const currentRemark = state.currentContactInfo ? (state.currentContactInfo.friend_remark || '') : '';
