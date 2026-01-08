@@ -1,6 +1,7 @@
 import os
 import time
 import random
+import itertools
 from dataclasses import dataclass
 from typing import Any, Dict, Iterator, Optional, Tuple
 
@@ -124,11 +125,17 @@ def api_fail(
 
 
 def gen_unique_phone() -> str:
-    # 11 位“手机号”字符串：尽量避免重复，保证可重复跑、也避免数据库脏数据冲突
-    # 后 10 位 = (时间戳毫秒 + 随机扰动) mod 1e10
-    now_ms = int(time.time() * 1000)
-    jitter = random.randint(0, 9999)
-    suffix = (now_ms + jitter) % (10**10)
+    # 11 位“手机号”字符串：尽量保证在同一进程内绝对不重复。
+    # 规则：后 10 位 = (纳秒时间戳 + 进程扰动 + 自增计数器) mod 1e10
+    # 说明：我们不追求“像真实手机号”，只需要满足后端格式校验且不撞库。
+    if not hasattr(gen_unique_phone, "_counter"):
+        gen_unique_phone._counter = itertools.count()  # type: ignore[attr-defined]
+        # 进程扰动：避免并发/多进程场景下的同一时间戳碰撞
+        gen_unique_phone._pid_jitter = (os.getpid() % 10000) * 100000  # type: ignore[attr-defined]
+
+    counter = next(gen_unique_phone._counter)  # type: ignore[attr-defined]
+    now_ns = time.time_ns()
+    suffix = (now_ns + gen_unique_phone._pid_jitter + counter) % (10**10)  # type: ignore[attr-defined]
     return "1" + f"{suffix:010d}"
 
 
@@ -166,7 +173,7 @@ def ensure_user_registered_and_logged_in(
         if http_status == 200 and payload.get("code") == 201:
             # ok
             pass
-        elif http_status == 400 and payload.get("message") == "手机号已存在":
+        elif http_status == 400 and "手机号已存在" in str(payload.get("message", "")):
             # 极小概率撞库，重试
             continue
         else:

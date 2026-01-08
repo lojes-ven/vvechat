@@ -116,7 +116,7 @@ def register_user(session: requests.Session, base_url: str, user: TestUser) -> N
     except Exception as e:
         # 支持重复运行：如果手机号已存在，继续
         msg = str(e)
-        if "手机号已存在" in msg:
+        if "手机号已存在" in msg or "已存在" in msg:
             return
         raise
 
