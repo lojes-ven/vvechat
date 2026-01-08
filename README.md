@@ -1,8 +1,6 @@
-# vvechat - High-Performance IM Prototype
+# 通讯录管理系统
 
-> 🚀 分布式 ID 生成系统与 LRU 缓存策略实践项目
-
-vvechat 是一个基于 Go 语言和原生 JavaScript 构建的即时通讯（IM）应用雏形。本项目并非一个完整的商业级聊天软件，而是一个专注于 **高性能组件设计** 的教学与实践项目。它重点模拟了通讯应用中“查看最常访问好友”的场景，并深入实践了 **雪花算法 (Snowflake)** 和 **LRU (Least Recently Used) 缓存策略**。
+这是一个基于 Go 语言的即时通讯（IM）应用雏形。本项目并非完整聊天软件，而是一个教学与实践项目。它重点模拟了通讯应用中“查看最常访问好友”的场景，并深入实践了 **雪花算法 (Snowflake)** 和 **LRU (Least Recently Used) 缓存策略**。
 
 ## 📚 1. 项目简介 (Introduction)
 
@@ -21,34 +19,12 @@ vvechat 是一个基于 Go 语言和原生 JavaScript 构建的即时通讯（IM
 | 模块 | 技术选型 | 说明 |
 | :--- | :--- | :--- |
 | **Backend** | **Go 1.25+** | 高性能后端语言 |
-| **Framework** | **Gin** | 轻量级 Web 框架 |
-| **Database** | **PostgreSQL** | 关系型数据库，存储用户与关系数据 |
-| **Cache** | **Redis** | 高速缓存 |
-| **Frontend** | **Vanilla JS** | 原生 JavaScript (无框架)，手写 LRU 算法 |
+| **Framework** | **Gin、gorm** | 轻量级 Web 框架与数据库ORM框架 |
+| **Database** | **PostgreSQL** | 关系型数据库 |
 | **Testing** | **Python / Node.js** | 压测脚本 (`id_bench`) 与算法基准测试 (`lru_bench`) |
+| **Frontend** | **Vanilla JS** | 原生 JavaScript (无框架)，手写 LRU 算法 |
 
-### 2.2 架构图
-
-```mermaid
-graph TD
-    User[Web Client (Browser)] -->|HTTP Requests| Nginx[Web Server / Load Balancer]
-    Nginx -->|API Calls| GoApp[Go Backend (Gin)]
-    
-    subgraph "Backend Services"
-        GoApp -->|Auth Middleware| JWT[JWT Validator]
-        GoApp -->|Snowflake Algo| IDGen[ID Generator Service]
-        GoApp -->|Read/Write| Redis[(Redis Cache)]
-        GoApp -->|Persist| DB[(PostgreSQL)]
-    end
-    
-    subgraph "Frontend Engine"
-        GUI[index.html] -->|Render| DOM
-        Logic[app.js] -->|Fetch| GoApp
-        Logic -->|Optimize| LRU[lru_cache.js (Client Cache)]
-    end
-```
-
-### 2.3 目录结构说明
+### 2.2 目录结构说明
 
 ```
 vvechat/
@@ -72,7 +48,6 @@ vvechat/
 
 *   **Go**: 1.25.5 或更高版本
 *   **PostgreSQL**: 运行在 `localhost:5432`
-*   **Redis**: 运行在 `localhost:6379`
 *   **Python**: 3.8+ (用于运行测试脚本)
 *   **Node.js**: (可选，用于运行前端基准测试)
 
@@ -101,7 +76,7 @@ go mod tidy
 # 运行服务
 go run cmd/main.go
 ```
-服务默认监听在 `8080` 端口（或根据 `config.yaml` 配置）。
+服务默认监听在 `8080` 端口。
 
 #### 第三步：运行前端
 
@@ -149,5 +124,3 @@ node benchmark_lru.js
     *   通过位运算实现高效的雪花算法，解决了分布式 ID 生成难题。
     *   构建了可视化的基准测试工具，直观展示算法性能。
 
----
-*Created by vvechat Team.*
