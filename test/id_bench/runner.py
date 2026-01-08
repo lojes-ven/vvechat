@@ -18,6 +18,8 @@ def main():
     parser.add_argument('--mode', default='mutex', choices=['mutex', 'batched', 'cachedtime'])
     parser.add_argument('--report-interval', type=int, default=1)
     parser.add_argument('--out-dir', default=None, help='输出目录（默认 test/out）')
+    parser.add_argument('--verify-mode', default='stream', choices=['stream', 'full'], help='校验方式：stream(流式) / full(全量加载)')
+    parser.add_argument('--no-unique', action='store_true', help='跳过唯一性校验（省内存，但不再检测重复）')
     
     args = parser.parse_args()
     
@@ -105,22 +107,23 @@ def main():
         for s in stats_data:
             writer.writerow([s['timestamp'], s['node_id'], s['actual_qps'], s['target_qps']])
             
-    # 2. Verify IDs (Sample check or full check)
-    # Reading all files might be heavy. We'll do a streaming check for duplicates if possible,
-    # or just load them if memory permits. For 30s * 200k QPS = 6M IDs. 
-    # 6M * 8 bytes = 48MB. Python ints are larger (28 bytes). ~168MB. It fits in memory.
-    
-    all_ids = []
-    for fname in id_files:
-        if os.path.exists(fname):
-            with open(fname, 'r') as f:
-                for line in f:
-                    all_ids.append(int(line.strip()))
-            # os.remove(fname) # Clean up
-            
-    print(f"Verifying {len(all_ids)} IDs...")
     verifier = Verifier()
-    verification_result = verifier.verify(all_ids)
+    if args.verify_mode == 'full':
+        # 全量加载（更直观，但更吃内存）
+        all_ids = []
+        for fname in id_files:
+            if os.path.exists(fname):
+                with open(fname, 'r', encoding='utf-8') as f:
+                    for line in f:
+                        s = line.strip()
+                        if s:
+                            all_ids.append(int(s))
+        print(f"Verifying (full) {len(all_ids)} IDs...")
+        verification_result = verifier.verify(all_ids)
+    else:
+        # 流式校验：边读边查，不构建大列表
+        print(f"Verifying (stream) from {len(id_files)} files...")
+        verification_result = verifier.verify_files_stream(id_files, check_unique=not args.no_unique)
     
     # 分析性能瓶颈
     bottleneck_analysis = Verifier.analyze_bottlenecks(stats_data, args.duration)

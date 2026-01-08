@@ -88,6 +88,105 @@ class Verifier:
             "errors": errors
         }
 
+    def verify_files_stream(self, filenames, check_unique=True, sample_duplicates=5):
+        """
+        流式校验：逐行读取 ID 文件并校验。
+
+        优点：不构建 all_ids 巨大列表，也不为每个节点保存完整 entries。
+        注意：如果 check_unique=True，仍需要一个 set 保存已见过的 ID（精确去重的下限）。
+        """
+
+        errors = []
+        duplicate_count = 0
+        duplicate_samples = []
+
+        seen = set() if check_unique else None
+
+        # node_id -> prev (timestamp, sequence)
+        prev_map = {}
+
+        node_stats = {}
+        total = 0
+        monotonicity_errors = 0
+
+        for fname in filenames:
+            try:
+                with open(fname, "r", encoding="utf-8") as f:
+                    for line in f:
+                        s = line.strip()
+                        if not s:
+                            continue
+                        try:
+                            id_val = int(s)
+                        except Exception:
+                            errors.append(f"文件 {fname} 存在非数字行: {s[:80]}")
+                            continue
+
+                        total += 1
+
+                        if seen is not None:
+                            if id_val in seen:
+                                duplicate_count += 1
+                                if len(duplicate_samples) < sample_duplicates:
+                                    duplicate_samples.append(id_val)
+                            else:
+                                seen.add(id_val)
+
+                        decoded = self.decode_id(id_val)
+                        node_id = decoded['node_id']
+                        ts = decoded['timestamp']
+                        seq = decoded['sequence']
+
+                        st = node_stats.get(node_id)
+                        if st is None:
+                            st = {
+                                "count": 0,
+                                "order_violations": 0,
+                                "min_timestamp": ts,
+                                "max_timestamp": ts,
+                            }
+                            node_stats[node_id] = st
+
+                        st["count"] += 1
+                        if ts < st["min_timestamp"]:
+                            st["min_timestamp"] = ts
+                        if ts > st["max_timestamp"]:
+                            st["max_timestamp"] = ts
+
+                        prev = prev_map.get(node_id)
+                        if prev is not None:
+                            prev_ts, prev_seq = prev
+                            if ts < prev_ts or (ts == prev_ts and seq <= prev_seq):
+                                st["order_violations"] += 1
+                                monotonicity_errors += 1
+                        prev_map[node_id] = (ts, seq)
+
+            except FileNotFoundError:
+                errors.append(f"找不到文件: {fname}")
+
+        unique_count = (len(seen) if seen is not None else None)
+
+        if duplicate_count > 0:
+            msg = f"发现 {duplicate_count} 个重复ID。总数: {total}"
+            if unique_count is not None:
+                msg += f", 唯一: {unique_count}"
+            if duplicate_samples:
+                msg += f". 样例: {duplicate_samples}"
+            errors.append(msg)
+
+        if monotonicity_errors > 0:
+            errors.append(f"发现 {monotonicity_errors} 个有序性违规")
+
+        return {
+            "valid": len(errors) == 0,
+            "count": total,
+            "unique_count": unique_count,
+            "duplicate_count": duplicate_count,
+            "node_count": len(node_stats),
+            "node_stats": node_stats,
+            "errors": errors,
+        }
+
     @staticmethod
     def analyze_bottlenecks(stats_data, duration):
         """

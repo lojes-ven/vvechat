@@ -3,7 +3,16 @@ import time
 
 from id_generator import SnowflakeGenerator
 
-def worker_loop(node_id, duration, target_qps, mode, result_queue, out_dir, report_interval=1):
+def worker_loop(
+    node_id,
+    duration,
+    target_qps,
+    mode,
+    result_queue,
+    out_dir,
+    report_interval=1,
+    flush_chunk_size=4096,
+):
     """
     Worker process that generates IDs at a fixed QPS.
     """
@@ -12,7 +21,11 @@ def worker_loop(node_id, duration, target_qps, mode, result_queue, out_dir, repo
     start_time = time.time()
     end_time = start_time + duration
     
-    generated_ids = []
+    # 直接写文件，避免把所有 ID 堆在内存里（长时间/高 QPS 会占用大量内存）
+    os.makedirs(out_dir, exist_ok=True)
+    filename = os.path.join(out_dir, f"ids_{node_id}.txt")
+    f = open(filename, "w", encoding="utf-8")
+    buf = []
     
     # Rate limiting state
     interval_per_req = 1.0 / target_qps if target_qps > 0 else 0
@@ -48,7 +61,10 @@ def worker_loop(node_id, duration, target_qps, mode, result_queue, out_dir, repo
             t0 = time.perf_counter()
             try:
                 new_id = generator.next_id()
-                generated_ids.append(new_id)
+                buf.append(f"{new_id}\n")
+                if len(buf) >= flush_chunk_size:
+                    f.writelines(buf)
+                    buf.clear()
                 ids_since_last_report += 1
                 count += 1
             except Exception as e:
@@ -77,21 +93,17 @@ def worker_loop(node_id, duration, target_qps, mode, result_queue, out_dir, repo
                 
     except KeyboardInterrupt:
         pass
+
+    finally:
+        if buf:
+            f.writelines(buf)
+            buf.clear()
+        f.close()
         
-    # Send all IDs for verification (in chunks if needed, but for this test we send all)
-    # Warning: Large lists might block the queue. In real prod, write to file.
-    # Here we write to a temp file and send the filename.
-    
-    os.makedirs(out_dir, exist_ok=True)
-    filename = os.path.join(out_dir, f"ids_{node_id}.txt")
-    with open(filename, "w", encoding="utf-8") as f:
-        for id_val in generated_ids:
-            f.write(f"{id_val}\n")
-            
     result_queue.put({
         "type": "done",
         "node_id": node_id,
-        "count": len(generated_ids),
+        "count": count,
         "filename": filename,
         "avg_latency": sum(latencies)/len(latencies) if latencies else 0
     })
