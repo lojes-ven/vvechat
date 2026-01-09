@@ -2,7 +2,9 @@ import os
 import time
 import random
 import itertools
+import json
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any, Dict, Iterator, Optional, Tuple
 
 import pytest
@@ -12,6 +14,28 @@ import requests
 DEFAULT_BASE_URL = "http://localhost:8080/api"
 
 
+def pytest_configure(config: pytest.Config) -> None:
+    # 让 pytest 的报告输出目录稳定存在（例如 pytest.ini 里默认写 junitxml 到 test/out/）
+    out_dir = Path(__file__).resolve().parents[1] / "out"
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+
+def pytest_runtest_makereport(item: pytest.Item, call: pytest.CallInfo) -> None:
+    # 失败时把最近几次 API 请求/响应附在报告里（命令行输出 & junit/html 报告都能看到）
+    if call.when != "call" or call.excinfo is None:
+        return
+    funcargs = getattr(item, "funcargs", {}) or {}
+    sess = funcargs.get("session")
+    trace = getattr(sess, "_vvechat_api_trace", None)
+    if not trace:
+        return
+    try:
+        content = json.dumps(trace[-5:], ensure_ascii=False, indent=2)
+    except Exception:
+        content = str(trace[-5:])
+    item.add_report_section(call.when, "vvechat-api-trace(last-5)", content)
+
+
 @dataclass(frozen=True)
 class ApiConfig:
     base_url: str
@@ -19,12 +43,24 @@ class ApiConfig:
 
 
 class ApiResponseError(RuntimeError):
-    def __init__(self, *, http_status: int, code: Optional[int], message: str, payload: Any):
-        super().__init__(f"HTTP {http_status} code={code} message={message}")
+    def __init__(
+        self,
+        *,
+        http_status: int,
+        code: Optional[int],
+        message: str,
+        payload: Any,
+        method: Optional[str] = None,
+        url: Optional[str] = None,
+    ):
+        prefix = f"{method} {url} -> " if method and url else ""
+        super().__init__(f"{prefix}HTTP {http_status} code={code} message={message}")
         self.http_status = http_status
         self.code = code
         self.message = message
         self.payload = payload
+        self.method = method
+        self.url = url
 
 
 @pytest.fixture(scope="session")
@@ -37,10 +73,18 @@ def api_config() -> ApiConfig:
 @pytest.fixture()
 def session() -> Iterator[requests.Session]:
     s = requests.Session()
+    setattr(s, "_vvechat_api_trace", [])
     try:
         yield s
     finally:
         s.close()
+
+
+def _redact_headers(headers: Dict[str, str]) -> Dict[str, str]:
+    redacted = dict(headers)
+    if "Authorization" in redacted:
+        redacted["Authorization"] = "Bearer <redacted>"
+    return redacted
 
 
 def _api_json(
@@ -60,17 +104,68 @@ def _api_json(
     try:
         res = session.request(method=method, url=url, headers=headers, json=json_body, timeout=cfg.timeout)
     except requests.RequestException as e:
-        raise RuntimeError(
-            f"无法连接后端：{e}. 请先启动 Go 服务，并确认 VVECHAT_BASE_URL={cfg.base_url}"
-        )
+        pytest.fail(f"无法连接后端：{e}. 请先启动 Go 服务，并确认 VVECHAT_BASE_URL={cfg.base_url}", pytrace=False)
 
     try:
         payload = res.json()
     except Exception as e:
-        raise RuntimeError(f"响应不是 JSON: {e}; body={res.text[:300]}")
+        body = res.text
+        trace = getattr(session, "_vvechat_api_trace", None)
+        if isinstance(trace, list):
+            trace.append(
+                {
+                    "request": {
+                        "method": method,
+                        "url": url,
+                        "headers": _redact_headers(headers),
+                        "json": json_body,
+                        "timeout": cfg.timeout,
+                    },
+                    "response": {
+                        "http_status": res.status_code,
+                        "body": body[:2000],
+                    },
+                }
+            )
+        raise RuntimeError(f"响应不是 JSON: {e}; body={body[:300]}")
 
     if not isinstance(payload, dict) or "code" not in payload:
+        trace = getattr(session, "_vvechat_api_trace", None)
+        if isinstance(trace, list):
+            trace.append(
+                {
+                    "request": {
+                        "method": method,
+                        "url": url,
+                        "headers": _redact_headers(headers),
+                        "json": json_body,
+                        "timeout": cfg.timeout,
+                    },
+                    "response": {
+                        "http_status": res.status_code,
+                        "payload": payload,
+                    },
+                }
+            )
         raise RuntimeError(f"响应结构异常: http={res.status_code} payload={payload}")
+
+    trace = getattr(session, "_vvechat_api_trace", None)
+    if isinstance(trace, list):
+        trace.append(
+            {
+                "request": {
+                    "method": method,
+                    "url": url,
+                    "headers": _redact_headers(headers),
+                    "json": json_body,
+                    "timeout": cfg.timeout,
+                },
+                "response": {
+                    "http_status": res.status_code,
+                    "payload": payload,
+                },
+            }
+        )
 
     return res.status_code, payload
 
@@ -92,6 +187,8 @@ def api_ok(
             code=payload.get("code"),
             message=str(payload.get("message", "")),
             payload=payload,
+            method=method,
+            url=f"{cfg.base_url}{path}",
         )
 
     code = payload.get("code")
@@ -101,6 +198,8 @@ def api_ok(
             code=code,
             message=str(payload.get("message", "")),
             payload=payload,
+            method=method,
+            url=f"{cfg.base_url}{path}",
         )
 
     return payload.get("data")
