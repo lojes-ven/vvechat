@@ -59,7 +59,7 @@ type FriendshipListResp struct {
 }
 
 type EnterConversationResp struct {
-	SenderName string `json:"sender_name,string"`
+	SenderName string `gorm:"name" json:"sender_name,string"`
 	Content    string `json:"content"`
 	ID         uint64 `json:"id,string"`
 	Status     uint8  `json:"status"`

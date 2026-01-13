@@ -176,6 +176,8 @@
 
   同时更新conversation_users表的last_message_id字段指向新创建的系统级消息
 
+  撤回的同时创建一个系统级消息，需要返回给前端
+
   前端接口
 
   ```http

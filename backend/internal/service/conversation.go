@@ -61,7 +61,7 @@ func EnterConversation(userID, conversationID uint64) ([]model.EnterConversation
 
 	res := db.Raw(`SELECT m.content, m.id, m.status, u.name
 		FROM messages m 
-		JOIN users u ON u.id = m.sender_id
+		LEFT JOIN users u ON u.id = m.sender_id
 		LEFT JOIN message_users mu ON mu.user_id = ? AND mu.message_id = m.id
 		WHERE m.conversation_id = ? AND  m.status != 1 AND mu.is_deleted = false
 		ORDER BY m.updated_at DESC `, userID, conversationID).Find(&resp)

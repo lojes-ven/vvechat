@@ -38,3 +38,120 @@ func SendMessage(senderID, conversationID uint64, content string) (uint64, error
 		return nil
 	})
 }
+
+// createSystemMessage 再一个会话中创建一个系统级消息
+// newID用户指定该系统消息的ID
+func createSystemMessage(tx *gorm.DB, content string, conversationID, newID uint64) error {
+	newMsg := model.Message{
+		SenderID:       0,
+		ConversationID: conversationID,
+		Content:        content,
+		MyModel: model.MyModel{
+			ID: newID,
+		},
+		Status: model.SYSTEM,
+	}
+	res := tx.Create(&newMsg)
+	if res.Error != nil {
+		log.Println(res.Error)
+		return errors.New("创建系统消息失败")
+	}
+	return nil
+}
+
+func RecallMessage(userID, msgID uint64) (uint64, error) {
+	db := infra.GetDB()
+	var temp model.Message
+	err := db.Model(&model.Message{}).
+		Select("sender_id, conversation_id").
+		Where("id = ?", msgID).
+		First(&temp).
+		Error
+	if err != nil {
+		log.Println(err)
+		return 0, errors.New("服务器错误")
+	}
+
+	senderID := temp.SenderID
+	conversationID := temp.ConversationID
+	if senderID != userID {
+		return 0, errors.New("不能撤回不是自己发的消息")
+	}
+
+	newID := utils.NewUniqueID()
+	return newID, db.Transaction(func(tx *gorm.DB) error {
+		res := tx.Model(&model.Message{}).
+			Where("id = ?", msgID).
+			Update("status", model.RECALLED)
+		if res.Error != nil {
+			log.Println(res.Error)
+			return errors.New("服务器错误")
+		}
+		if res.RowsAffected == 0 {
+			log.Println("撤回消息操作影响了0行表")
+			return errors.New("服务器错误")
+		}
+
+		var senderName string
+		err = tx.Model(&model.User{}).
+			Where("id = ?", senderID).
+			Pluck("name", &senderName).Error
+		if err != nil {
+			log.Println(err)
+			return errors.New("服务器错误")
+		}
+		newContent := senderName + "撤回了一条消息"
+		err = createSystemMessage(tx, newContent, conversationID, newID)
+		if err != nil {
+			return err
+		}
+
+		err = updateLastMessageID(tx, conversationID, newID)
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+}
+
+func DeleteMessage(userID, messageID uint64) error {
+	db := infra.GetDB()
+	var temp model.Message
+	err := db.Model(&model.Message{}).
+		Select("conversation_id").
+		Where("id = ?", messageID).
+		First(&temp).Error
+	if err != nil {
+		log.Println(err)
+		return errors.New("服务器错误")
+	}
+	conversationID := temp.ConversationID
+
+	return db.Transaction(func(tx *gorm.DB) error {
+		res := tx.Model(&model.MessageUser{}).
+			Where("message_id = ? AND user_id = ?", messageID, userID).
+			Update("is_deleted", true)
+		if res.Error != nil {
+			log.Println(res.Error)
+			return errors.New("服务器错误")
+		}
+		if res.RowsAffected == 0 {
+			log.Println("删除消息操作影响了0行表")
+			return errors.New("服务器错误")
+		}
+
+		var lastID uint64
+		sql := `SELECT m.id FROM messages m 
+			LEFT JOIN message_users mu ON mu.message_id = m.id AND mu.user_id = ?
+			WHERE m.status != ? AND mu.is_deleted = false
+			ORDER BY m.created_at DESC 
+			LIMIT 1`
+		res = tx.Raw(sql, userID, model.RECALLED).Scan(&lastID)
+
+		res = tx.Model(&model.ConversationUser{}).
+			Where("user_id = ? AND conversation_id = ?", userID, conversationID).
+			Update("last_message_id", lastID)
+
+		return nil
+	})
+}
