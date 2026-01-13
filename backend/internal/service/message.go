@@ -147,10 +147,19 @@ func DeleteMessage(userID, messageID uint64) error {
 			ORDER BY m.created_at DESC 
 			LIMIT 1`
 		res = tx.Raw(sql, userID, model.RECALLED).Scan(&lastID)
+		if res.Error != nil {
+			log.Println(res.Error)
+			return errors.New("服务器错误")
+		}
+		if res.RowsAffected == 0 {
+			log.Println("删除消息更新最后消息id 时没有查到id")
+			return errors.New("服务器错误")
+		}
 
-		res = tx.Model(&model.ConversationUser{}).
-			Where("user_id = ? AND conversation_id = ?", userID, conversationID).
-			Update("last_message_id", lastID)
+		err = updateLastMessageID(tx, conversationID, lastID)
+		if err != nil {
+			return err
+		}
 
 		return nil
 	})
