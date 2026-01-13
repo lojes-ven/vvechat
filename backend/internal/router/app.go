@@ -48,8 +48,10 @@ func Launch() *gin.Engine {
 
 			converse := auth.Group("/conversations")
 			{
-				converse.GET("")                  //加载聊天列表
-				converse.GET("/:conversation_id") //加载聊天窗口
+				converse.GET("")                                             // 加载聊天列表
+				converse.POST("/private", handler.CreatePrivateConversation) // 创建私聊
+				converse.POST("/group")                                      //创建群聊
+				converse.GET("/:conversation_id", handler.EnterConversation) // 进入聊天窗口
 			}
 
 			request := auth.Group("/friendship_requests")

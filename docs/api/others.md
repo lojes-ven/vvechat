@@ -134,7 +134,7 @@ Authorization: Bearer <token>
 Content-Type: application/json
 
 {
-    "new_uid": "新微信号"
+    "uid": "新微信号"
 }
 ```
 
@@ -166,7 +166,7 @@ Authorization: Bearer <token>
 Content-Type: application/json
 
 {
-    "new_name": "新昵称"
+    "name": "新昵称"
 }
 ```
 

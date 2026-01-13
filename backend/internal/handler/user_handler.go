@@ -74,12 +74,12 @@ func LoginByPhone(c *gin.Context) {
 func ReviseUid(c *gin.Context) {
 	id := c.GetUint64("id")
 
-	var req model.ReviseUidReq
+	var req model.UidReq
 	if err := c.ShouldBindJSON(&req); err != nil {
 		response.Fail(c, 400, "json解析出错")
 		return
 	}
-	newUid := req.NewUid
+	newUid := req.Uid
 
 	err := service.ReviseUid(id, newUid)
 	if err != nil {
@@ -116,14 +116,14 @@ func RevisePassword(c *gin.Context) {
 // ReviseName 修改用户名
 func ReviseName(c *gin.Context) {
 	id := c.GetUint64("id")
-	var req model.ReviseNameReq
+	var req model.NameReq
 	if err := c.ShouldBindJSON(&req); err != nil {
 		log.Println("json解析失败")
 		response.Fail(c, 400, "修改失败")
 		return
 	}
 
-	err := service.ReviseName(id, req.NewName)
+	err := service.ReviseName(id, req.Name)
 	if err != nil {
 		response.Fail(c, 500, "数据库错误")
 		return

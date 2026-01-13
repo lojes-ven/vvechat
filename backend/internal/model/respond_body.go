@@ -51,3 +51,10 @@ type FriendshipListResp struct {
 	FriendRemark string `json:"friend_remark"`
 	FriendID     uint64 `json:"friend_id,string"`
 }
+
+type EnterConversationResp struct {
+	SenderName string `json:"sender_name,string"`
+	Content    string `json:"content"`
+	ID         uint64 `json:"id,string"`
+	Status     uint8  `json:"status"`
+}

@@ -57,7 +57,7 @@ func ReviseRemark(c *gin.Context) {
 		return
 	}
 
-	var req model.ReviseRemarkReq
+	var req model.RemarkReq
 	if err := c.ShouldBindJSON(&req); err != nil {
 		log.Println("json解析错误")
 		response.Fail(c, 400, "输入不合法")

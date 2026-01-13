@@ -190,20 +190,24 @@
 
 - **修改好友备注**
 
-  修改好友备注接口：
+  需要特别注意：conversaton_users表中，私聊conversation中的remark字段和好友备注
 
+  是强关联的，修改好友备注时需要同步修改conversation_users表的remark字段
+  
+  修改好友备注接口：
+  
   ```http
   POST api/auth/friendships/remark/:friend_id
   Authorization: Bearer <token>
   Content-Type: application/json
-
+  
   {
       "remark": "虽然但是"
   }
   ```
-
+  
   成功后端返回：
-
+  
   ```json
   {
       "code": 201,
@@ -211,16 +215,16 @@
       "data": null
   }
   ```
-
+  
   失败后端返回：
-
+  
   ```json
   {
       "code": 400,
       "message": "修改失败"
   }
   ```
-
+  
   
 
 

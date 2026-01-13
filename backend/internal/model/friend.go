@@ -43,12 +43,16 @@ func NewFriendshipRequest(senderID, receiverID uint64, msg string, senderName st
 }
 
 func (f *FriendshipRequest) BeforeCreate(db *gorm.DB) error {
-	f.ID = utils.NewUniqueID()
+	if f.ID == 0 {
+		f.ID = utils.NewUniqueID()
+	}
 	return nil
 }
 
 func (f *Friendship) BeforeCreate(db *gorm.DB) error {
-	f.ID = utils.NewUniqueID()
+	if f.ID == 0 {
+		f.ID = utils.NewUniqueID()
+	}
 
 	return nil
 }
