@@ -174,8 +174,18 @@ Content-Type: application/json
 
 ```json
 {
-    "code": 200, // 或201，视具体实现而定，通常成功即可
-    "message": "success"
+    "code": 201,
+    "message": "success",
+    "data": null
+}
+```
+
+失败后端返回：
+
+```json
+{
+    "code": 500,
+    "message": "数据库错误"
 }
 ```
 
@@ -198,8 +208,18 @@ Content-Type: application/json
 
 ```json
 {
-    "code": 200,
-    "message": "success"
+    "code": 201,
+    "message": "success",
+    "data": null
+}
+```
+
+失败后端返回：
+
+```json
+{
+    "code": 500,
+    "message": "新密码与旧密码不能相同" // 或其他错误信息
 }
 ```
 

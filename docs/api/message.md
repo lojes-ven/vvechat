@@ -49,20 +49,20 @@
 
   ```json
   { 
-      "code": 200
-      "message":
-      "data": {
-  		[
-      		{update_time, sender_name, content, id, status},
-  			{},
-      	]    
-  	}
+      "code": 200,
+      "message": "success",
+      "data": [
+          {
+              "sender_name": "发送者昵称",
+              "content": "消息内容",
+              "id": "消息ID（string格式）",
+              "status": 0
+          }
+      ]
   }
   ```
 
-  失败后端返回：
-
-  ```json
+  注意：status字段说明：0-正常消息，1-已撤回，2-系统消息
   {
       "code":  400 / 401 / 500 / 409,
       "message": 信息
@@ -231,9 +231,9 @@
   
   ```json
   {
-      "code":
-      "message":
-      "data":
+      "code": 200,
+      "message": "success",
+      "data": null
   }
   ```
   
@@ -241,8 +241,8 @@
   
   ```json
   {
-      "code":  400 / 401 / 500 / 409,
-      "message": 信息
+      "code": 500,
+      "message": "服务器错误"
   }
   ```
   

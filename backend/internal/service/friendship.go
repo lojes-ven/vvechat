@@ -70,7 +70,7 @@ func createFriendship(tx *gorm.DB, userID, friendID uint64) error {
 func DeleteFriendship(userID, friendID uint64) error {
 	db := infra.GetDB()
 	return db.Transaction(func(tx *gorm.DB) error {
-		res := db.Where("user_id = ? AND friend_id = ?", userID, friendID).
+		res := tx.Where("user_id = ? AND friend_id = ?", userID, friendID).
 			Delete(&model.Friendship{})
 		if res.Error != nil {
 			log.Println(res.Error)
@@ -81,7 +81,7 @@ func DeleteFriendship(userID, friendID uint64) error {
 			return gorm.ErrRecordNotFound
 		}
 
-		res = db.Where("user_id = ? AND friend_id = ?", friendID, userID).
+		res = tx.Where("user_id = ? AND friend_id = ?", friendID, userID).
 			Delete(&model.Friendship{})
 		if res.Error != nil {
 			log.Println(res.Error)

@@ -210,7 +210,7 @@
   
   ```json
   {
-      "code": 201,
+      "code": 200,
       "message": "success",
       "data": null
   }
@@ -220,8 +220,8 @@
   
   ```json
   {
-      "code": 400,
-      "message": "修改失败"
+      "code": 500,
+      "message": "服务器错误"
   }
   ```
   
