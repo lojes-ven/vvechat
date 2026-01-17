@@ -10,6 +10,7 @@ import (
 func Launch() *gin.Engine {
 	r := gin.Default()
 
+	// 跨域中间件
 	r.Use(func(c *gin.Context) {
 		c.Header("Access-Control-Allow-Origin", "*")                            // 允许所有域名访问
 		c.Header("Access-Control-Allow-Methods", "GET, POST, DELETE")           // 允许的HTTP方法
@@ -21,6 +22,7 @@ func Launch() *gin.Engine {
 		c.Next()
 	})
 
+	// RESTful API
 	api := r.Group("/api")
 	{
 		api.POST("/register", handler.Register)               // 注册
@@ -29,8 +31,10 @@ func Launch() *gin.Engine {
 		// 刷新 token
 		api.POST("/auth/refresh_token", middleware.RefreshAuth(), handler.RefreshToken)
 
+		// /auth 表示需要鉴权的操作
 		auth := api.Group("/auth", middleware.JWTAuth())
 		{
+			// 修改个人信息
 			me := auth.Group("/me")
 			{
 				me.POST("/uid", handler.ReviseUid)           //修改微信号
@@ -38,6 +42,7 @@ func Launch() *gin.Engine {
 				me.POST("/name", handler.ReviseName)         // 修改用户名
 			}
 
+			// 查看他人信息
 			info := auth.Group("/info")
 			{
 				info.GET("/friends/id/:id", handler.FriendInfoByID)        // 根据ID 查看好友信息
@@ -46,14 +51,7 @@ func Launch() *gin.Engine {
 				info.GET("/strangers/uid/:uid", handler.StrangerInfoByUid) // 根据Uid 查看陌生人信息
 			}
 
-			converse := auth.Group("/conversations")
-			{
-				converse.GET("", handler.ConversationList)                   // 加载聊天列表
-				converse.POST("/private", handler.CreatePrivateConversation) // 创建私聊
-				converse.POST("/group")                                      //创建群聊
-				converse.GET("/:conversation_id", handler.ChatHistoryList)   // 加载聊天记录
-			}
-
+			// 好友申请相关
 			request := auth.Group("/friendship_requests")
 			{
 				request.GET("", handler.FriendRequestList)                  //加载好友申请列表
@@ -62,6 +60,7 @@ func Launch() *gin.Engine {
 				request.DELETE("/:request_id", handler.FriendRequestDelete) //删除好友申请
 			}
 
+			// 好友相关
 			friendship := auth.Group("/friendships")
 			{
 				friendship.GET("", handler.FriendshipList)                  //加载好友列表
@@ -69,12 +68,28 @@ func Launch() *gin.Engine {
 				friendship.POST("/remark/:friend_id", handler.ReviseRemark) //修改好友备注
 			}
 
+			// 消息相关
 			message := auth.Group("/messages")
 			{
-				message.POST("", handler.SendText)               //发送文本消息
+				message.POST("/text", handler.SendText)          //发送文本消息
 				message.POST("/file")                            // 发送文件
 				message.DELETE("/recall", handler.RecallMessage) //撤回消息
 				message.DELETE("/delete", handler.DeleteMessage) //删除消息
+			}
+
+			// 会话相关
+			converse := auth.Group("/conversations")
+			{
+				converse.GET("", handler.ConversationList)                   // 加载聊天列表
+				converse.POST("/private", handler.CreatePrivateConversation) // 创建私聊
+				converse.POST("/group")                                      //创建群聊
+				converse.GET("/:conversation_id", handler.ChatHistoryList)   // 加载聊天记录
+			}
+
+			// 文件相关
+			file := auth.Group("/files")
+			{
+				file.GET("/:message_id") // 下载文件
 			}
 		}
 	}

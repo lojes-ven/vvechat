@@ -52,6 +52,8 @@ func SendText(senderID, conversationID uint64, content string) (uint64, error) {
 	})
 }
 
+func SendFile() (*model.SendFileResp, error) {}
+
 func RecallMessage(userID, msgID uint64) (uint64, error) {
 	db := infra.GetDB()
 	var temp model.Message

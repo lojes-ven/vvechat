@@ -33,7 +33,7 @@
 
 ## 注册与登录
 
-### 注册
+### 注册（http）
 
 ```http
 POST /api/register
@@ -69,7 +69,7 @@ Content-Type: application/json
 }
 ```
 
-### 微信号登录
+### 微信号登录（http）
 
 ```http
 POST /api/login/uid
@@ -114,7 +114,7 @@ Content-Type: application/json
 }
 ```
 
-### 手机号登录
+### 手机号登录（http）
 
 ```http
 POST /api/login/phone_number
@@ -139,7 +139,7 @@ Content-Type: application/json
 }
 ```
 
-### 刷新 Token
+### 刷新 Token（http）
 
 ```http
 POST /api/auth/refresh_token
@@ -173,7 +173,7 @@ Authorization: Bearer <refresh_token>
 
 ## 个人资料
 
-### 修改微信号
+### 修改微信号（http）
 
 ```http
 POST /api/auth/me/uid
@@ -208,7 +208,7 @@ Content-Type: application/json
 }
 ```
 
-### 修改密码
+### 修改密码（http）
 
 ```http
 POST /api/auth/me/password
@@ -244,7 +244,7 @@ Content-Type: application/json
 }
 ```
 
-### 修改昵称
+### 修改昵称（http）
 
 ```http
 POST /api/auth/me/name
@@ -274,7 +274,7 @@ Content-Type: application/json
 
 ## 用户信息查询
 
-### 查看好友信息（通过 ID）
+### 查看好友信息（通过 ID）（http）
 
 ```http
 GET /api/auth/info/friends/id/{id}
@@ -305,7 +305,7 @@ Authorization: Bearer <access_token>
 }
 ```
 
-### 查看陌生人信息（通过 ID）
+### 查看陌生人信息（通过 ID）（http）
 
 ```http
 GET /api/auth/info/strangers/id/{id}
@@ -325,7 +325,7 @@ Authorization: Bearer <access_token>
 }
 ```
 
-### 查看好友信息（通过 Uid）
+### 查看好友信息（通过 Uid）（http）
 
 ```http
 GET /api/auth/info/friends/uid/{uid}
@@ -334,7 +334,7 @@ Authorization: Bearer <access_token>
 
 成功返回结构与“通过 ID”一致。
 
-### 查看陌生人信息（通过 Uid）
+### 查看陌生人信息（通过 Uid）（http）
 
 ```http
 GET /api/auth/info/strangers/uid/{uid}
@@ -342,7 +342,6 @@ Authorization: Bearer <access_token>
 ```
 
 成功返回结构与“通过 ID”一致。
-
 
 
 

@@ -75,3 +75,11 @@ type ChatHistoryResp struct {
 	UpdatedAt  time.Time `json:"updated_at"`
 	Content    any       `json:"content"`
 }
+
+// SendFileResp 发送文件返回体
+type SendFileResp struct {
+	MessageID uint64 `json:"message_id,string"`
+	FileName  string `json:"file_name"`
+	FileSize  int64  `json:"file_size"`
+	FileType  string `json:"file_type"`
+}

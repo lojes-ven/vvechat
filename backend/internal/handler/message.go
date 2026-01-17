@@ -15,13 +15,20 @@ func SendText(c *gin.Context) {
 		response.Fail(c, 400, "json 解析出错")
 		return
 	}
+	conversationID := req.ConversationID
+	content := req.Content
 
-	msgID, err := service.SendText(senderID, req.ConversationID, req.Content)
+	msgID, err := service.SendText(senderID, conversationID, content)
 	if err != nil {
 		response.Fail(c, 500, err.Error())
 		return
 	}
 	response.Success(c, 201, "success", msgID)
+}
+
+func SendFile(c *gin.Context) {
+	userID := c.GetUint64("id")
+
 }
 
 func RecallMessage(c *gin.Context) {

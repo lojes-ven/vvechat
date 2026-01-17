@@ -1,6 +1,6 @@
 ## 好友申请
 
-### 加载好友申请列表
+### 加载好友申请列表（http）
 
 ```http
 GET /api/auth/friendship_requests
@@ -35,7 +35,7 @@ Authorization: Bearer <access_token>
 }
 ```
 
-### 发送好友申请
+### 发送好友申请（http）
 
 ```http
 POST /api/auth/friendship_requests
@@ -72,7 +72,7 @@ Authorization: Bearer <access_token>
 }
 ```
 
-### 同意好友申请
+### 同意好友申请（http）
 
 ```http
 POST /api/auth/friendship_requests/{request_id}
@@ -98,7 +98,7 @@ Authorization: Bearer <access_token>
 }
 ```
 
-### 删除好友申请
+### 删除好友申请（http）
 
 ```http
 DELETE /api/auth/friendship_requests/{request_id}
@@ -119,7 +119,7 @@ Authorization: Bearer <access_token>
 
 ## 好友关系
 
-### 加载好友列表
+### 加载好友列表（http）
 
 ```http
 GET /api/auth/friendships
@@ -142,7 +142,7 @@ Authorization: Bearer <access_token>
 }
 ```
 
-### 删除好友
+### 删除好友（http）
 
 ```http
 DELETE /api/auth/friendships/{friend_id}
@@ -168,7 +168,7 @@ Authorization: Bearer <access_token>
 }
 ```
 
-### 修改好友备注
+### 修改好友备注（http）
 
 ```http
 POST /api/auth/friendships/remark/{friend_id}

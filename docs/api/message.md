@@ -1,30 +1,6 @@
 ## 会话
 
-### 加载会话列表
-
-```http
-GET /api/auth/conversations
-Authorization: Bearer <access_token>
-```
-
-成功返回：
-
-```json
-{
-    "code": 200,
-    "message": "success",
-    "data": [
-        {
-            "remark": "张三",
-            "conversation_id": "123456",
-            "unread_count": 2,
-            "content": "你好，今天有空吗？"
-        }
-    ]
-}
-```
-
-### 加载聊天记录
+### 加载聊天记录（http）
 
 ```http
 GET /api/auth/conversations/{conversation_id}
@@ -70,7 +46,7 @@ Authorization: Bearer <access_token>
 - 2：系统消息
 - 3：文件消息
 
-### 创建私聊
+### 创建私聊（http）
 
 ```http
 POST /api/auth/conversations/private
@@ -100,10 +76,10 @@ Authorization: Bearer <access_token>
 
 ## 消息
 
-### 发送文本消息
+### 发送文本消息（http）
 
 ```http
-POST /api/auth/messages
+POST /api/auth/messages/texts
 Content-Type: application/json
 Authorization: Bearer <access_token>
 ```
@@ -127,7 +103,7 @@ Authorization: Bearer <access_token>
 }
 ```
 
-### 撤回消息
+### 撤回消息（http）
 
 ```http
 DELETE /api/auth/messages/recall
@@ -153,7 +129,7 @@ Authorization: Bearer <access_token>
 }
 ```
 
-### 删除消息（仅对当前用户隐藏）
+### 删除消息（仅对当前用户隐藏）（http）
 
 ```http
 DELETE /api/auth/messages/delete
