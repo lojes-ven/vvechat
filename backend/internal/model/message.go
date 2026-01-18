@@ -66,7 +66,7 @@ type File struct {
 
 	FileName  string `gorm:"type:varchar(255);not null"`
 	FileType  string `gorm:"type:varchar(50);not null"`
-	FileUrl   string `gorm:"type:varchar(255);not null"`
+	FileURL   string `gorm:"type:varchar(255);not null"`
 	FileSize  int64  `gorm:"not null"`
 	MessageID uint64 `gorm:"type:bigint;index"`
 

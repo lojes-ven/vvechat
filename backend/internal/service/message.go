@@ -59,7 +59,7 @@ func SendText(senderID, conversationID uint64, content string) (uint64, error) {
 func SendFile(senderID, conversationID uint64, file *multipart.FileHeader) (*model.SendFileResp, error) {
 	newID := utils.NewUniqueID()
 
-	// 创建 uploads 目录
+	// 获取 uploads 目录
 	uploadDir := infra.GetFilePath()
 
 	// 生成文件路径，使用newID作为文件名，保持原扩展名
@@ -88,7 +88,7 @@ func SendFile(senderID, conversationID uint64, file *multipart.FileHeader) (*mod
 	newFile := model.File{
 		FileName:  fileName,
 		FileType:  fileType,
-		FileUrl:   filePath,
+		FileURL:   filePath,
 		FileSize:  fileSize,
 		MessageID: newID,
 	}
@@ -125,6 +125,30 @@ func SendFile(senderID, conversationID uint64, file *multipart.FileHeader) (*mod
 
 		return nil
 	})
+}
+
+func DownloadFile(userID, messageID uint64) (string, error) {
+	db := infra.GetDB()
+
+	// 一次查询完成：消息存在 + 用户在对话中 + 文件存在
+	var file model.File
+	err := db.Model(&model.File{}).
+		Select("files.file_url").
+		Joins("JOIN messages m ON m.id = files.message_id").
+		Joins("JOIN conversation_users cu ON cu.conversation_id = m.conversation_id").
+		Where("files.message_id = ? AND cu.user_id = ? AND m.status = ?",
+			messageID, userID, model.FILE).
+		First(&file).Error
+
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return "", errors.New("文件不存在或无访问权限")
+		}
+		log.Println("DB error:", err)
+		return "", errors.New("服务器错误")
+	}
+
+	return file.FileURL, nil
 }
 
 func RecallMessage(userID, msgID uint64) (uint64, error) {

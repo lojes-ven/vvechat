@@ -1,9 +1,18 @@
 package handler
 
 import (
+	"fmt"
+	"io"
+	"log"
+	"mime"
+	"net/url"
+	"os"
+	"path/filepath"
 	"strconv"
+	"strings"
 	"vvechat/internal/model"
 	"vvechat/internal/service"
+	"vvechat/pkg/infra"
 	"vvechat/pkg/response"
 
 	"github.com/gin-gonic/gin"
@@ -53,6 +62,70 @@ func SendFile(c *gin.Context) {
 		return
 	}
 	response.Success(c, 201, "success", resp)
+}
+
+func DownloadFile(c *gin.Context) {
+	userID := c.GetUint64("id")
+	messageIDStr := c.Param("message_id")
+	messageID, err := strconv.ParseUint(messageIDStr, 10, 64)
+	if err != nil {
+		response.Fail(c, 400, "message_id 格式错误")
+		return
+	}
+
+	fileURL, err := service.DownloadFile(userID, messageID)
+	if err != nil {
+		response.Fail(c, 500, err.Error())
+		return
+	}
+
+	// 安全检查，确保文件路径在允许的目录下
+	allowedDir := infra.GetFilePath()
+	if !strings.HasPrefix(fileURL, allowedDir) {
+		response.Fail(c, 403, "非法文件路径")
+		return
+	}
+
+	// 打开文件
+	file, err := os.Open(fileURL)
+	if err != nil {
+		if os.IsNotExist(err) {
+			response.Fail(c, 404, "文件不存在")
+		} else {
+			log.Printf("打开文件失败: %v\n", err)
+			response.Fail(c, 500, "文件读取失败")
+		}
+		return
+	}
+	defer file.Close()
+
+	// 获取文件信息
+	fileInfo, err := file.Stat()
+	if err != nil {
+		response.Fail(c, 500, "无法获取文件信息")
+		return
+	}
+
+	// 设置响应头
+	fileName := filepath.Base(fileURL) // 例如 "report.pdf"
+
+	// 自动推断 MIME 类型
+	mimeType := mime.TypeByExtension(filepath.Ext(fileName))
+	if mimeType == "" {
+		mimeType = "application/octet-stream"
+	}
+
+	c.Header("Content-Type", mimeType)
+	c.Header("Content-Length", strconv.FormatInt(fileInfo.Size(), 10))
+	c.Header("Content-Disposition", fmt.Sprintf(`attachment; filename="%s"`, url.PathEscape(fileName)))
+
+	// 流式传输文件（不加载全文件到内存）
+	_, err = io.Copy(c.Writer, file)
+	if err != nil {
+		// 客户端可能取消了下载，通常不用报错
+		log.Printf("文件传输中断: %v", err)
+		return
+	}
 }
 
 func RecallMessage(c *gin.Context) {

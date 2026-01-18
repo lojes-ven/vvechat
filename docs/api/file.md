@@ -37,3 +37,10 @@ multipart/form-data
 }
 ```
 
+### 下载文件（http）
+
+```http
+POST /api/auth/files/{message_id}
+Authorization: Bearer <access_token>
+```
+
