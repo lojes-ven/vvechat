@@ -29,6 +29,16 @@
 
 `/api/auth/refresh_token` 需要 `Authorization: Bearer <refresh_token>`。
 
+### 实时通知（WebSocket）
+
+- WebSocket 连接 URL：
+
+  `ws://localhost:8080/api/auth/ws`
+
+- 鉴权：
+
+  在建立 WebSocket 连接（即执行 HTTP 升级请求）时，必须在请求头中附带 `Authorization: Bearer <access_token>`（和其它需要鉴权的 HTTP 接口一致）。服务端的中间件会解析 token 并在连接时把用户 ID 绑定到该 WebSocket 连接上。
+
 ---
 
 ## 注册与登录

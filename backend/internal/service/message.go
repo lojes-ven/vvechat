@@ -14,7 +14,93 @@ import (
 	"gorm.io/gorm"
 )
 
+// sendMessageAuth 验证用户是否有权限在该会话中发送消息
+func sendMessageAuth(userID, conversationID uint64) error {
+	// 检查 conversation_users 表中是否存在该用户和会话
+	var cnt int64
+	db := infra.GetDB()
+	err := db.Model(&model.ConversationUser{}).
+		Where("user_id = ? AND conversation_id = ?", userID, conversationID).
+		Count(&cnt).Error
+	if err != nil {
+		log.Println(err)
+		return errors.New("服务器错误")
+	}
+	if cnt == 0 {
+		return errors.New("无权限在该会话中发送消息")
+	}
+	return nil
+}
+
+// createSystemMessage 在一个会话中创建一个系统级消息
+// newID用户指定该系统消息的ID
+func createSystemMessage(tx *gorm.DB, content string, conversationID, newID uint64) error {
+	newMsg := model.Message{
+		SenderID:       0,
+		ConversationID: conversationID,
+		MyModel: model.MyModel{
+			ID: newID,
+		},
+		Status: model.SYSTEM,
+	}
+	newText := model.Text{
+		Text:      content,
+		MessageID: newID,
+	}
+	res := tx.Create(&newMsg)
+	if res.Error != nil {
+		log.Println(res.Error)
+		return errors.New("创建系统消息失败")
+	}
+
+	res = tx.Create(&newText)
+	if res.Error != nil {
+		log.Println(res.Error)
+		return errors.New("创建系统消息失败")
+	}
+
+	return nil
+}
+
+// updateUnreadCount 给当前会话中除开当前sender的所有人的unread_count加一
+func updateUnreadCount(tx *gorm.DB, senderID, conversationID uint64) error {
+	res := tx.Model(&model.ConversationUser{}).
+		Where("user_id != ? AND conversation_id = ?",
+			senderID, conversationID).
+		UpdateColumn("unread_count", gorm.Expr("unread_count + ?", 1))
+	if res.Error != nil {
+		log.Println(res.Error)
+		return res.Error
+	}
+	if res.RowsAffected == 0 {
+		log.Println("更新unread count字段影响了0行表")
+		return errors.New("更新unread count失败")
+	}
+	return nil
+}
+
+// updateLastMessageID 更新当前会话的last_message_id
+func updateLastMessageID(tx *gorm.DB, conversationID, msgID uint64) error {
+	res := tx.Model(&model.ConversationUser{}).
+		Where("conversation_id = ?", conversationID).
+		Update("last_message_id", msgID)
+	if res.Error != nil {
+		log.Println(res.Error)
+		return res.Error
+	}
+	if res.RowsAffected == 0 {
+		log.Println("更新last msg id字段影响了0行表")
+		return errors.New("更新last msg id失败")
+	}
+	return nil
+}
+
 func SendText(senderID, conversationID uint64, content string) (uint64, error) {
+	err := sendMessageAuth(senderID, conversationID)
+	if err != nil {
+		return 0, err
+	}
+
 	newID := utils.NewUniqueID()
 	newMsg := model.Message{
 		SenderID:       senderID,
@@ -57,6 +143,11 @@ func SendText(senderID, conversationID uint64, content string) (uint64, error) {
 }
 
 func SendFile(senderID, conversationID uint64, file *multipart.FileHeader) (*model.SendFileResp, error) {
+	err := sendMessageAuth(senderID, conversationID)
+	if err != nil {
+		return nil, err
+	}
+
 	newID := utils.NewUniqueID()
 
 	// 获取 uploads 目录
@@ -208,21 +299,24 @@ func RecallMessage(userID, msgID uint64) (uint64, error) {
 
 func DeleteMessage(userID, messageID uint64) error {
 	db := infra.GetDB()
-	var temp model.Message
+	var msg model.Message
+
 	err := db.Model(&model.Message{}).
 		Select("conversation_id").
 		Where("id = ?", messageID).
-		First(&temp).Error
+		First(&msg).
+		Error
+
 	if err != nil {
 		log.Println(err)
 		return errors.New("服务器错误")
 	}
-	conversationID := temp.ConversationID
+	conversationID := msg.ConversationID
 
 	return db.Transaction(func(tx *gorm.DB) error {
-		res := tx.Model(&model.MessageUser{}).
-			Where("message_id = ? AND user_id = ?", messageID, userID).
-			Update("is_deleted", true)
+		res := tx.Where("user_id = ? AND message_id = ?", userID, messageID).
+			Delete(&model.MessageUser{})
+
 		if res.Error != nil {
 			log.Println(res.Error)
 			return errors.New("服务器错误")
@@ -235,7 +329,7 @@ func DeleteMessage(userID, messageID uint64) error {
 		var lastID uint64
 		sql := `SELECT m.id FROM messages m 
 			LEFT JOIN message_users mu ON mu.message_id = m.id AND mu.user_id = ?
-			WHERE m.status != ? AND mu.is_deleted = false
+			WHERE m.status != ? AND mu.deleted_at IS NULL
 			ORDER BY m.created_at DESC 
 			LIMIT 1`
 		res = tx.Raw(sql, userID, model.RECALLED).Scan(&lastID)

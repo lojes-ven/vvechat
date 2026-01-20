@@ -26,6 +26,13 @@ type FriendshipRequest struct {
 	Status              string `gorm:"type:varchar(16);not null;check:status IN ('pending','accepted','rejected','canceled')"`
 }
 
+type ConversationFriend struct {
+	MyModel
+	ConversationID uint64 `gorm:"type:bigint;not null"`
+	UserID         uint64 `gorm:"type:bigint;not null"`
+	FriendID       uint64 `gorm:"type:bigint;not null"`
+}
+
 func NewFriendship(userID, friendID uint64, remark string) *Friendship {
 	return &Friendship{
 		UserID:       userID,
@@ -52,6 +59,14 @@ func (f *FriendshipRequest) BeforeCreate(db *gorm.DB) error {
 }
 
 func (f *Friendship) BeforeCreate(db *gorm.DB) error {
+	if f.ID == 0 {
+		f.ID = utils.NewUniqueID()
+	}
+
+	return nil
+}
+
+func (f *ConversationFriend) BeforeCreate(db *gorm.DB) error {
 	if f.ID == 0 {
 		f.ID = utils.NewUniqueID()
 	}

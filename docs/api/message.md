@@ -46,7 +46,7 @@ Authorization: Bearer <access_token>
 - 2：系统消息
 - 3：文件消息
 
-### 创建私聊（http）
+### 发起私聊（http）
 
 ```http
 POST /api/auth/conversations/private
@@ -68,7 +68,7 @@ Authorization: Bearer <access_token>
 {
     "code": 201,
     "message": "success",
-    "data": null
+    "data": 6699966
 }
 ```
 

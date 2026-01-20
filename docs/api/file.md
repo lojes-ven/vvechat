@@ -8,7 +8,7 @@ Authorization: Bearer <access_token>
 multipart/form-data
 ```
 
-| 字段名          | 类型   | 说明               |
+| 字段名          | x类型  | 说明               |
 | --------------- | ------ | ------------------ |
 | conversation_id | string | 会话ID             |
 | file            | File   | 用户想要发送的文件 |

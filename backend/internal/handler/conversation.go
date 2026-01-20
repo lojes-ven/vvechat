@@ -9,21 +9,22 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// CreatePrivateConversation 新建私聊
-func CreatePrivateConversation(c *gin.Context) {
+// StartPrivateConversation 新建私聊
+func StartPrivateConversation(c *gin.Context) {
 	userID := c.GetUint64("id")
 	var req model.IDReq
 	if err := c.ShouldBindJSON(&req); err != nil {
 		response.Fail(c, 400, "json 解析出错")
 		return
 	}
+	friendID := req.ID
 
-	err := service.CreatePrivateConversation(userID, req.ID)
+	conversationID, err := service.StartPrivateConversation(userID, friendID)
 	if err != nil {
 		response.Fail(c, 500, err.Error())
 		return
 	}
-	response.Success(c, 201, "success", nil)
+	response.Success(c, 201, "success", conversationID)
 }
 
 // ChatHistoryList 加载聊天记录

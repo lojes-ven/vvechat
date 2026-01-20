@@ -2,6 +2,7 @@ package router
 
 import (
 	"vvechat/internal/handler"
+	"vvechat/internal/ws"
 	"vvechat/pkg/middleware"
 
 	"github.com/gin-gonic/gin"
@@ -34,6 +35,11 @@ func Launch() *gin.Engine {
 		// /auth 表示需要鉴权的操作
 		auth := api.Group("/auth", middleware.JWTAuth())
 		{
+			// websocket
+			auth.GET("/ws", func(c *gin.Context) {
+				ws.ServeWs(ws.GetHub(), c)
+			})
+
 			// 修改个人信息
 			me := auth.Group("/me")
 			{
@@ -80,10 +86,10 @@ func Launch() *gin.Engine {
 			// 会话相关
 			converse := auth.Group("/conversations")
 			{
-				converse.GET("", handler.ConversationList)                   // 加载聊天列表
-				converse.POST("/private", handler.CreatePrivateConversation) // 创建私聊
-				converse.POST("/group")                                      //创建群聊
-				converse.GET("/:conversation_id", handler.ChatHistoryList)   // 加载聊天记录
+				converse.GET("", handler.ConversationList)                  // 加载聊天列表
+				converse.POST("/private", handler.StartPrivateConversation) // 发起私聊
+				converse.POST("/group")                                     //创建群聊
+				converse.GET("/:conversation_id", handler.ChatHistoryList)  // 加载聊天记录
 			}
 
 			// 文件相关

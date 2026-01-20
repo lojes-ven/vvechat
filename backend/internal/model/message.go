@@ -32,7 +32,6 @@ type MessageUser struct {
 	MyModel
 	UserID    uint64 `gorm:"bigint;uniqueIndex:idx_message_user"`
 	MessageID uint64 `gorm:"bigint;uniqueIndex:idx_message_user"`
-	IsDeleted bool   `gorm:"type:boolean;default:false"`
 	IsStarred bool   `gorm:"type:boolean;default:false"`
 }
 
@@ -49,7 +48,6 @@ type ConversationUser struct {
 	UnreadCount    int    `gorm:"type:int;default:0"`
 	Remark         string `gorm:"varchar(32)"`
 	LastMessageID  uint64 `gorm:"type:bigint;index"`
-	IsDeleted      bool   `gorm:"type:boolean;default:false"`
 	IsPinned       bool   `gorm:"type:boolean;default:false"`
 }
 

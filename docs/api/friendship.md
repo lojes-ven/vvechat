@@ -63,14 +63,45 @@ Authorization: Bearer <access_token>
 }
 ```
 
-失败返回示例：
+**websocket:**
+
+- 推送事件类型：
+
+  `new_friend_request`
+
+- 推送消息 JSON 格式：
 
 ```json
 {
-    "code": 409,
-    "message": "发送失败，请勿重复发送"
+  "type": "new_friend_request",
+  "data": {
+    "sender_id": 12345,
+    "sender_name": "张三",
+    "message": "你好，我们加个好友吧",
+    "request_id": 67890,
+    "created_at": "2026-01-15T09:30:00Z"
+  }
 }
 ```
+
+字段说明：
+- `type`：事件类型，固定为 `new_friend_request`。
+
+- `data.sender_id`：发送者的用户 ID。
+
+- `data.sender_name`：发送者在申请中填写的名字/昵称。
+
+- `data.message`：验证/附言文本（即 `verification_message`）。
+
+- `data.request_id`：服务端创建的好友申请记录 ID（用于前端在接收通知后拉取或一键跳转到申请详情）。
+
+- `data.created_at`：申请创建时间（UTC 时间戳格式）。
+
+  
+
+- 离线处理：
+
+  如果接收者不在线，WebSocket 推送不会生效。接收者仍然可以通过之前的 HTTP 接口 `GET /api/auth/friendship_requests` 拉取未处理的申请。
 
 ### 同意好友申请（http）
 
@@ -193,20 +224,3 @@ Content-Type: application/json
     "data": null
 }
 ```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

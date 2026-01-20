@@ -9,6 +9,48 @@ import (
 	"gorm.io/gorm"
 )
 
+// createFriendship 给两个人（id主键）创建出好友关系
+func createFriendship(tx *gorm.DB, userID, friendID uint64) error {
+	var friendName, userName string
+
+	err := tx.Table("users").
+		Select("name").
+		Where("id = ?", friendID).
+		Row().
+		Scan(&friendName)
+
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	err = tx.Table("users").
+		Select("name").
+		Where("id = ?", userID).
+		Row().
+		Scan(&userName)
+
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	res := tx.Model(&model.Friendship{}).
+		Create(model.NewFriendship(userID, friendID, friendName))
+	if res.Error != nil {
+		log.Println(res.Error)
+		return res.Error
+	}
+
+	res = tx.Model(&model.Friendship{}).
+		Create(model.NewFriendship(friendID, userID, userName))
+	if res.Error != nil {
+		log.Println(res.Error)
+		return res.Error
+	}
+	return nil
+}
+
 func FriendshipList(userID uint64) ([]model.FriendshipListResp, error) {
 	var resp []model.FriendshipListResp
 
@@ -70,8 +112,14 @@ func ReviseRemark(userID, friendID uint64, remark string) error {
 			return errors.New("服务器错误")
 		}
 
+		// 同时修改会话用户表中的备注
+		conversationID, err := getPrivateConversationID(userID, friendID)
+		if err != nil {
+			return err
+		}
+
 		res = tx.Model(&model.ConversationUser{}).
-			Where("user_id = ? AND conversation_id = ?", userID, friendID).
+			Where("user_id = ? AND conversation_id = ?", userID, conversationID).
 			Update("remark", remark)
 		if res.Error != nil {
 			if errors.Is(res.Error, gorm.ErrRecordNotFound) {

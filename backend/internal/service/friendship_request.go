@@ -1,12 +1,22 @@
 package service
 
 import (
+	"encoding/json"
+	"errors"
 	"log"
 	"vvechat/internal/model"
+	"vvechat/internal/ws"
 	"vvechat/pkg/infra"
 
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
+)
+
+const (
+	ACCEPTED = "accepted"
+	PENDING  = "pending"
+	REJECTED = "rejected"
+	CANCELED = "canceled"
 )
 
 // SendFriendRequest 发送好友申请操作
@@ -29,10 +39,26 @@ func SendFriendRequest(senderID, receiverID uint64, msg string, senderName strin
 		return gorm.ErrDuplicatedKey
 	}
 
-	return infra.GetDB().
+	err := infra.GetDB().
 		Model(&model.FriendshipRequest{}).
 		Create(model.NewFriendshipRequest(senderID, receiverID, msg, senderName)).
 		Error
+
+	if err == nil {
+		// 发送 websocket 通知
+		notification := map[string]any{
+			"type": "new_friend_request",
+			"data": map[string]any{
+				"sender_id":   senderID,
+				"sender_name": senderName,
+				"message":     msg,
+			},
+		}
+		msgBytes, _ := json.Marshal(notification)
+		ws.GetHub().SendToUser(receiverID, msgBytes)
+	}
+
+	return err
 }
 
 // FriendRequestList 加载好友申请列表操作
@@ -54,13 +80,13 @@ func FriendRequestList(receiverID uint64) ([]model.FriendRequestListResp, error)
 
 // FriendRequestAccept 通过好友申请
 func FriendRequestAccept(id uint64) error {
+	// 参数的 id 是好友申请表的主键 ID
 	return infra.GetDB().Transaction(func(tx *gorm.DB) error {
 
 		var req model.FriendshipRequest
 
-		if err := tx.
-			Clauses(clause.Locking{Strength: "UPDATE"}).
-			Where("id = ? AND status = ?", id, "pending").
+		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).
+			Where("id = ? AND status = ?", id, PENDING).
 			First(&req).
 			Error; err != nil {
 			log.Println(err)
@@ -68,7 +94,7 @@ func FriendRequestAccept(id uint64) error {
 		}
 
 		if err := tx.Model(&req).
-			Update("status", "accepted").
+			Update("status", ACCEPTED).
 			Error; err != nil {
 			log.Println(err)
 			return err
@@ -77,6 +103,35 @@ func FriendRequestAccept(id uint64) error {
 		err := createFriendship(tx, req.SenderID, req.ReceiverID)
 		if err != nil {
 			log.Println(err)
+			return err
+		}
+
+		// 两用户有好友关系之后，开始创建（或确认存在）私聊会话
+		conversationID, err := getPrivateConversationID(req.ReceiverID, req.SenderID)
+		if err != nil {
+			return err
+		}
+
+		// 获取 receiver 的名字，用于备注
+		var user model.User
+		err = tx.Model(&model.User{}).
+			Select("name").
+			Where("id = ?", req.ReceiverID).
+			First(&user).Error
+		if err != nil {
+			log.Println(err)
+			return errors.New("服务器错误")
+		}
+		receiverName := user.Name
+
+		// 创建或取消删除标记 conversation_users 表
+		err = CreateConversationUser(tx, req.SenderID, conversationID, receiverName)
+		if err != nil {
+			return err
+		}
+
+		err = CreateConversationUser(tx, req.ReceiverID, conversationID, req.SenderName)
+		if err != nil {
 			return err
 		}
 
