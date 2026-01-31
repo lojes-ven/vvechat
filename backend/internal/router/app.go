@@ -1,11 +1,10 @@
 package router
 
 import (
-	"vvechat/internal/handler"
-	"vvechat/internal/ws"
-	"vvechat/pkg/middleware"
-
 	"github.com/gin-gonic/gin"
+	"github.com/lojes7/inquire/internal/handler"
+	"github.com/lojes7/inquire/internal/ws"
+	"github.com/lojes7/inquire/pkg/middleware"
 )
 
 func Launch() *gin.Engine {

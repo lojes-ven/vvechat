@@ -4,11 +4,11 @@ import (
 	"errors"
 	"log"
 	"strconv"
-	"vvechat/internal/model"
-	"vvechat/internal/service"
-	"vvechat/pkg/response"
 
 	"github.com/gin-gonic/gin"
+	"github.com/lojes7/inquire/internal/model"
+	"github.com/lojes7/inquire/internal/service"
+	"github.com/lojes7/inquire/pkg/response"
 	"gorm.io/gorm"
 )
 

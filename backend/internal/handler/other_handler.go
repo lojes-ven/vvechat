@@ -2,11 +2,11 @@ package handler
 
 import (
 	"strconv"
-	"vvechat/internal/service"
-	"vvechat/pkg/judge"
-	"vvechat/pkg/response"
 
 	"github.com/gin-gonic/gin"
+	"github.com/lojes7/inquire/internal/service"
+	"github.com/lojes7/inquire/pkg/judge"
+	"github.com/lojes7/inquire/pkg/response"
 )
 
 // RefreshToken 刷新Token

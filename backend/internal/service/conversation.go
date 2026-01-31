@@ -3,10 +3,10 @@ package service
 import (
 	"errors"
 	"log"
-	"vvechat/internal/model"
-	"vvechat/pkg/infra"
-	"vvechat/pkg/utils"
 
+	"github.com/lojes7/inquire/internal/model"
+	"github.com/lojes7/inquire/pkg/infra"
+	"github.com/lojes7/inquire/pkg/utils"
 	"gorm.io/gorm"
 )
 
@@ -143,29 +143,6 @@ func getPrivateConversationID(userID, friendID uint64) (uint64, error) {
 	}
 
 	return cf.ConversationID, nil
-}
-
-// isFriend 检查两用户是否为好友关系
-// 第一个返回值为true表示是好友关系，false表示不是好友关系
-// 需要处理错误
-func isFriend(userID, friendID uint64) (bool, error) {
-	db := infra.GetDB()
-
-	var cnt int64
-	err := db.Model(&model.Friendship{}).
-		Where("(user_id = ? AND friend_id = ?)", userID, friendID).
-		Count(&cnt).
-		Error
-	if err != nil {
-		log.Println(err)
-		return false, errors.New("服务器错误")
-	}
-
-	if cnt == 0 {
-		return false, nil
-	}
-
-	return true, nil
 }
 
 func createPrivateConversation(userID, friendID uint64) (uint64, error) {

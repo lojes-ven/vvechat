@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"errors"
 	"log"
-	"vvechat/internal/model"
-	"vvechat/internal/ws"
-	"vvechat/pkg/infra"
 
+	"github.com/lojes7/inquire/internal/model"
+	"github.com/lojes7/inquire/internal/ws"
+	"github.com/lojes7/inquire/pkg/infra"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )

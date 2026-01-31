@@ -1,8 +1,7 @@
 package model
 
 import (
-	"vvechat/pkg/utils"
-
+	"github.com/lojes7/inquire/pkg/utils"
 	"gorm.io/gorm"
 )
 

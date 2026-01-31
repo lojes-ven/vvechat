@@ -3,13 +3,12 @@ package handler
 import (
 	"log"
 	"net/http"
-	"vvechat/internal/model"
-	"vvechat/internal/service"
-
-	"vvechat/pkg/judge"
-	"vvechat/pkg/response"
 
 	"github.com/gin-gonic/gin"
+	"github.com/lojes7/inquire/internal/model"
+	"github.com/lojes7/inquire/internal/service"
+	"github.com/lojes7/inquire/pkg/judge"
+	"github.com/lojes7/inquire/pkg/response"
 )
 
 // Register 注册操作

@@ -3,10 +3,10 @@ package service
 import (
 	"errors"
 	"log"
-	"vvechat/internal/model"
-	"vvechat/pkg/infra"
-	"vvechat/pkg/secure"
 
+	"github.com/lojes7/inquire/internal/model"
+	"github.com/lojes7/inquire/pkg/infra"
+	"github.com/lojes7/inquire/pkg/secure"
 	"gorm.io/gorm"
 )
 

@@ -3,8 +3,9 @@ package main
 import (
 	"log"
 	"os"
-	"vvechat/internal/router"
-	"vvechat/pkg/infra"
+
+	"github.com/lojes7/inquire/internal/router"
+	"github.com/lojes7/inquire/pkg/infra"
 )
 
 func main() {

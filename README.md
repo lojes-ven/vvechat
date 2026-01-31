@@ -1,4 +1,4 @@
-# VVECHAT
+# INQUIRE
 
 ## 快速开始
 

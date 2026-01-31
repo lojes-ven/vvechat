@@ -3,8 +3,8 @@ package model
 import (
 	"strconv"
 	"time"
-	"vvechat/pkg/utils"
 
+	"github.com/lojes7/inquire/pkg/utils"
 	"gorm.io/gorm"
 )
 

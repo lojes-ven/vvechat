@@ -2,9 +2,9 @@ package service
 
 import (
 	"log"
-	"vvechat/internal/model"
-	"vvechat/pkg/infra"
 
+	"github.com/lojes7/inquire/internal/model"
+	"github.com/lojes7/inquire/pkg/infra"
 	"gorm.io/gorm"
 )
 

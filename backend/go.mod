@@ -1,4 +1,4 @@
-module vvechat
+module github.com/lojes7/inquire
 
 go 1.25.5
 

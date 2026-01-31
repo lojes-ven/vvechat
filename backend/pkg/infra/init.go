@@ -5,9 +5,8 @@ import (
 	"os"
 	"sync"
 	"time"
-	"vvechat/pkg/secure"
-	_ "vvechat/pkg/utils"
 
+	"github.com/lojes7/inquire/pkg/secure"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"

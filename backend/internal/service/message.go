@@ -7,10 +7,10 @@ import (
 	"mime/multipart"
 	"path/filepath"
 	"strings"
-	"vvechat/internal/model"
-	"vvechat/pkg/infra"
-	"vvechat/pkg/utils"
 
+	"github.com/lojes7/inquire/internal/model"
+	"github.com/lojes7/inquire/pkg/infra"
+	"github.com/lojes7/inquire/pkg/utils"
 	"gorm.io/gorm"
 )
 

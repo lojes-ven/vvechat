@@ -4,8 +4,8 @@ import (
 	"database/sql/driver"
 	"fmt"
 	"strings"
-	"vvechat/pkg/utils"
 
+	"github.com/lojes7/inquire/pkg/utils"
 	"gorm.io/gorm"
 )
 

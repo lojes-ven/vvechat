@@ -2,10 +2,10 @@ package middleware
 
 import (
 	"strings"
-	"vvechat/pkg/response"
-	"vvechat/pkg/secure"
 
 	"github.com/gin-gonic/gin"
+	"github.com/lojes7/inquire/pkg/response"
+	"github.com/lojes7/inquire/pkg/secure"
 )
 
 // RefreshAuth RefreshToken专属中间件

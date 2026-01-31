@@ -2,11 +2,11 @@ package handler
 
 import (
 	"strconv"
-	"vvechat/internal/model"
-	"vvechat/internal/service"
-	"vvechat/pkg/response"
 
 	"github.com/gin-gonic/gin"
+	"github.com/lojes7/inquire/internal/model"
+	"github.com/lojes7/inquire/internal/service"
+	"github.com/lojes7/inquire/pkg/response"
 )
 
 // StartPrivateConversation 新建私聊
