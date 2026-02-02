@@ -4,7 +4,7 @@
 
 1. 自定义完善 `.env.example` 文件内容，并将文件名更改为 `.env`
 
-2. 确保在 `/vvechat` 根目录：
+2. 确保在 `/inquire` 根目录：
 
    ```shell
    $ docker compose up --build -d
